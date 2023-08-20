@@ -1,11 +1,13 @@
-import { FC, ReactNode } from "react";
+import { ReactNode } from "react";
 import encryption from "../assets/encryption.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { useState } from "react";
 import CryptoJS from "crypto-js";
+import fileDownload from "js-file-download";
+import { invoke } from "@tauri-apps/api/tauri";
 
-const Encrypt: FC = () => {
+const Encrypt: ReactNode = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
   const [_encType, setEncType] = useState<string>("");
 
@@ -34,56 +36,34 @@ const Encrypt: FC = () => {
     const f = file;
     const buf = await f?.arrayBuffer();
     // console.log(buf);
-    // const bytes = new Uint8Array(buf);
-    // console.log(bytes);
-    // const wordArray = CryptoJS.lib.WordArray.create(buf);
-    // console.log(wordArray);
-    // const key = CryptoJS.lib.WordArray.random(24);
-    // const key = window.crypto.getRandomValues(new Uint8Array(16));
-    // const iv = CryptoJS.lib.WordArray.random(16);
+
+    const key = window.crypto.getRandomValues(new Uint8Array(24));
     // const iv = window.crypto.getRandomValues(new Uint8Array(16));
-    // console.log(buf);
-    // console.log(key.toString(), iv.toString());
+    console.log(key.toString());
     const wordArray = CryptoJS.lib.WordArray.create(buf);
     // console.log(wordArray);
-    // console.log(iv);
-    // const finalA = wordArray + iv;
-    // console.log(finalA);
-    let encrypted = CryptoJS.AES.encrypt(wordArray, "key", {
+    let encrypted = CryptoJS.AES.encrypt(wordArray, key.toString(), {
       // iv: iv,
-      mode: CryptoJS.mode.CTR,
-      padding: CryptoJS.pad.Iso97971,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7,
     });
     // console.log(encrypted);
-    let decrypted = CryptoJS.AES.decrypt(encrypted, "key");
+    let fileEnc = new Blob([encrypted]);
+    // fileDownload(fileEnc, "");
+    invoke("encryptfile");
+
+    // let decrypted = CryptoJS.AES.decrypt(encrypted, key.toString());
 
     // console.log(decrypted);
-    let dec = await convertWordArrayToUint8Array(decrypted);
+    // let dec = await convertWordArrayToUint8Array(decrypted);
     // console.log(dec);
-    let fileDec = new Blob([dec]);
-    console.log(fileDec);
-    // let textBytes = aesjs.utils.utf8.toBytes(file);
-    // // console.log(textBytes);
-    // // An example 128-bit key
-    // let key = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-
-    // // The initialization vector (must be 16 bytes)
-    // let iv = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
-    // // let encrypted = CryptoJS.AES.encrypt(textBytes, "lol2k");
-    // // let text = "dawdawdawdawdwdadawdadawvdsfada";
-    // // let textBytes = aesjs.utils.utf8.toBytes(text);
-    // console.log(textBytes);
-    // let aesCbc = new aesjs.ModeOfOperation.cbc(key, iv);
-    // let encryptedBytes = aesCbc.encrypt(textBytes);
-    // console.log(encryptedBytes);
+    // let fileDec = new Blob([dec]);
+    // console.log(fileDec);
+    // fileDownload(fileDec, "");
   };
 
   const handleFileChange = async (e) => {
     setFile(e?.target?.files[0]);
-    // const f = e.target.files[0];
-    // const buf = await f?.arrayBuffer();
-    // const bytes = new Uint8Array(buf);
-    // setFile(bytes);
   };
 
   return (
