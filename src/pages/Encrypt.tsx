@@ -6,12 +6,13 @@ import { useState } from "react";
 import CryptoJS from "crypto-js";
 import fileDownload from "js-file-download";
 import { invoke } from "@tauri-apps/api/tauri";
+import { open } from "@tauri-apps/api/dialog";
 
 const Encrypt: ReactNode = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
   const [_encType, setEncType] = useState<string>("");
 
-  const [file, setFile] = useState<Uint8Array>();
+  const [file, setFile] = useState<string>("");
 
   const convertWordArrayToUint8Array = async (wordArray) => {
     var arrayOfWords = wordArray.hasOwnProperty("words") ? wordArray.words : [];
@@ -33,24 +34,24 @@ const Encrypt: ReactNode = () => {
   };
 
   const encryptFile = async () => {
-    const f = file;
-    const buf = await f?.arrayBuffer();
+    // const f = file;
+    // const buf = await f?.arrayBuffer();
     // console.log(buf);
 
-    const key = window.crypto.getRandomValues(new Uint8Array(24));
     // const iv = window.crypto.getRandomValues(new Uint8Array(16));
+    const key = window.crypto.getRandomValues(new Uint8Array(24));
     console.log(key.toString());
-    const wordArray = CryptoJS.lib.WordArray.create(buf);
+    // const wordArray = CryptoJS.lib.WordArray.create(buf);
     // console.log(wordArray);
-    let encrypted = CryptoJS.AES.encrypt(wordArray, key.toString(), {
-      // iv: iv,
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7,
-    });
+    // let encrypted = CryptoJS.AES.encrypt(wordArray, key.toString(), {
+    // iv: iv,
+    //   mode: CryptoJS.mode.CBC,
+    //   padding: CryptoJS.pad.Pkcs7,
+    // });
     // console.log(encrypted);
-    let fileEnc = new Blob([encrypted]);
+    // let fileEnc = new Blob([encrypted]);
     // fileDownload(fileEnc, "");
-    invoke("encryptfile");
+    invoke("encryptfile", { filePath: file, key: key });
 
     // let decrypted = CryptoJS.AES.decrypt(encrypted, key.toString());
 
@@ -63,7 +64,26 @@ const Encrypt: ReactNode = () => {
   };
 
   const handleFileChange = async (e) => {
-    setFile(e?.target?.files[0]);
+    // setFile(e?.target?.files[0]);
+    const selected = await open({
+      multiple: false,
+      // filters: [
+      //   {
+      //     name: "Image",
+      //     extensions: ["png", "jpeg"],
+      //   },
+      // ],
+    });
+    console.log(selected);
+    // if (Array.isArray(selected)) {
+    // user selected multiple files
+    // } else
+    if (selected === null) {
+      // user cancelled the selection
+    } else {
+      // user selected a single file
+      setFile(selected);
+    }
   };
 
   return (
@@ -103,11 +123,17 @@ const Encrypt: ReactNode = () => {
                 placeholder="Type here"
               ></textarea>
             ) : (
-              <input
-                type="file"
-                className="file-input file-input-error w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black"
-                onChange={handleFileChange}
-              />
+              // <input
+              //   type="file"
+              //   className="file-input file-input-error w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black"
+              //   onClick={handleFileChange}
+              // />
+              <button
+                className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden"
+                onClick={handleFileChange}
+              >
+                {file != "" ? `${file.split("\\").pop()}` : "Choose File"}
+              </button>
             )}
             <select
               className="select bg-amber-500 w-full max-w-xs uppercase text-black"
@@ -127,7 +153,7 @@ const Encrypt: ReactNode = () => {
               <button
                 className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
                 onClick={() => {
-                  encryptFile(file);
+                  encryptFile();
                 }}
               >
                 Encrypt

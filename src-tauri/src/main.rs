@@ -6,12 +6,20 @@ use aes::Aes256;
 use block_modes::block_padding::Pkcs7;
 use block_modes::{BlockMode, Cbc};
 use hex_literal::hex;
-use std::any::type_name;
+use rand::Rng;
+use hex::encode;
+extern crate buffer;
+// use std::io::Write;
+// use std::fmt::Write;
+
+// use core::slice::SlicePattern;
+use std::io::prelude::*;
+use buffer::ReadBuffer;
+// use std::any::type_name;
 use std::env;
 // use std::error::Error;
 // use std::fs;
 use std::fs::File;
-use std::io::prelude::*;
 use std::path::Path;
 use std::str;
 
@@ -30,9 +38,9 @@ fn greet(name: &str) -> String {
 // }
 
 #[tauri::command]
-fn encryptfile() {
-    let path =
-        Path::new(r"M:\pROGRAMMING fILES\DedSec\passdomtauri\passdomNative\src\assets\hey.txt");
+async fn encryptfile(file_path: String) {
+    println!("path: {}", file_path);
+    let path = Path::new(&file_path);
     let display = path.display();
 
     // Open the path in read-only mode, returns `io::Result<File>`
@@ -43,39 +51,51 @@ fn encryptfile() {
     let mut contents = Vec::new();
     file.read_to_end(&mut contents);
 
-    println!("File contents: {:?}", contents);
+    // println!("File contents: {:?}", contents);
 
-    let iv = hex!("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff");
+    // let iv = hex!("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff");
+    // rand::thread_rng().fill(&mut iv); 
+    // let mut mykey = String::from("000102030405060708090A0B0C0D0E0F");
+    // let mut mykey = [0u8; 16]; 
+    // rand::thread_rng().fill(&mut mykey);
+    let iv = rand::thread_rng().gen::<[u8; 16]>();
+    let key =  rand::thread_rng().gen::<[u8; 16]>();
+    // let hex_key = encode(mykey); 
 
-    // let mut message = String::from("Hello world!");
-    let mut mykey = String::from("000102030405060708090A0B0C0D0E0F");
+    println!("Key: {}", encode(key));
+    println!("IV: {}", encode(iv));
 
-    println!("Key: {}", mykey);
-    println!("IV: f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff");
 
-    // let plaintext = message.as_bytes();
-    // println!("{}", type_of(&plaintext));
-
-    let key = hex::decode(mykey).expect("Decoding failed");
+    // let key = hex::decode(hex_key).expect("Decoding failed");
 
     let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
 
     let pos = contents.len();
+    println!("pos : {}" , pos);
 
-    let mut buffer = [0u8; 100000];
+    // let mut buffer = [0u8; 1000000];
+    let mut buffer: Vec<u8> = vec![0u8; pos+100]; 
+    // println!("buf: {:?}", buffer.len());
+
 
     buffer[..pos].copy_from_slice(&contents);
+    // println!("buf: {:?}", buffer);
 
     let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
 
-    println!("\nCiphertext: {:?}", hex::encode(ciphertext));
+    let mut fil = File::create(r"C:\Users\manis\Desktop\encypted.enc").expect("something");
+    fil.write_all(ciphertext).expect("something");
+
+    // println!("\nCiphertext: {:?}", hex::encode(ciphertext));
+    // println!("\nCiphertext: {:?}", ciphertext);
 
     // Decrypt Code
-    // let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
-    // let mut buf = ciphertext.to_vec();
-    // let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
-
-    // println!("\nCiphertext: {:?}", decrypted_ciphertext);
+    let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
+    let mut buf = ciphertext.to_vec();
+    let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+    let mut fil = File::create(r"C:\Users\manis\Desktop\l.txt").expect("something");
+    fil.write_all(decrypted_ciphertext).expect("something");
+    println!("\nDecrypted: {:?}", decrypted_ciphertext);
 }
 
 fn main() {

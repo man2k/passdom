@@ -7,19 +7,24 @@ license = ""
 repository = ""
 edition = "2021"
 
+[env]
+RUST_BACKTRACE = "1"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
-tauri = { version = "1.4", features = ["shell-open"] }
+tauri = { version = "1.4", features = [ "dialog-all", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 aes="0.7.5"
 hex="0.4.3"
 block-modes="0.8.1"
 hex-literal="0.3.3"
+buffer = "0.1.9"
+rand = "0.8.5"
 
 
 [features]
