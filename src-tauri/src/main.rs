@@ -1,21 +1,22 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use std::fs::File;
-use std::path::Path;
-use std::env;
-use std::str;
-use std::io::prelude::*;
+// use aes::cipher::generic_array::functional;
 use aes::Aes128;
 use aes::Aes192;
 use aes::Aes256;
 use block_modes::block_padding::Pkcs7;
 use block_modes::{BlockMode, Cbc};
-use rand::Rng;
 use hex::encode;
-use std::any::type_name;
+use rand::Rng;
+use std::env;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
+use std::str;
+
+// use std::any::type_name;
 use dirs;
 use std::process::Command;
-
 
 type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 type Aes256Cbc = Cbc<Aes256, Pkcs7>;
@@ -27,16 +28,20 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-fn type_of<T>(_: T) -> &'static str {
-    type_name::<T>()
-}
+// fn type_of<T>(_: T) -> &'static str {
+//     type_name::<T>()
+// }
 
 #[tauri::command]
-async fn decryptfile(file_path: String, file_name: String, key: String) ->  Result<String, String>{
+async fn decryptfile(
+    file_path: String,
+    file_name: String,
+    key: String,
+    algo: usize,
+) -> Result<String, String> {
     println!("path: {}", file_path);
     let path = Path::new(&file_path);
     let display = path.display();
-
     let mut file = match File::open(&path) {
         Err(why) => panic!("couldn't open {}: {}", display, why),
         Ok(file) => file,
@@ -44,107 +49,214 @@ async fn decryptfile(file_path: String, file_name: String, key: String) ->  Resu
     let mut contents = Vec::new();
     let _ = file.read_to_end(&mut contents);
 
-    let (content, iv) = contents.split_at(contents.len()-16);
+    let (content, iv) = contents.split_at(contents.len() - 16);
     let fkey = hex::decode(key).expect("Decoding failed");
+    let mut buf = content.to_vec();
 
     println!("IV: {}", encode(&iv));
     println!("Key: {}", encode(&fkey));
 
-    let cipher = Aes128Cbc::new_from_slices(&fkey,  &iv).unwrap();
-    let mut buf = content.to_vec();
-    let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
-    let downloads = dirs::download_dir().expect("Could not find downloads directory");
-    let finalpath = downloads.join(file_name);
-    let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
-    fil.write_all(&decrypted_ciphertext).expect("Error Saving Encrypted File");
-    Ok("This worked!".into())
+    if algo == 128 {
+        let cipher = Aes128Cbc::new_from_slices(&fkey, &iv).unwrap();
+        let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+        let downloads = dirs::download_dir().expect("Could not find downloads directory");
+        let finalpath = downloads.join(file_name);
+        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+        fil.write_all(&decrypted_ciphertext)
+            .expect("Error Saving Encrypted File");
+        Ok("This worked!".into())
+    } else if algo == 192 {
+        let cipher = Aes192Cbc::new_from_slices(&fkey, &iv).unwrap();
+        let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+        let downloads = dirs::download_dir().expect("Could not find downloads directory");
+        let finalpath = downloads.join(file_name);
+        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+        fil.write_all(&decrypted_ciphertext)
+            .expect("Error Saving Encrypted File");
+        Ok("This worked!".into())
+    } else if algo == 256 {
+        let cipher = Aes256Cbc::new_from_slices(&fkey, &iv).unwrap();
+        let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+        let downloads = dirs::download_dir().expect("Could not find downloads directory");
+        let finalpath = downloads.join(file_name);
+        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+        fil.write_all(&decrypted_ciphertext)
+            .expect("Error Saving Encrypted File");
+        Ok("This worked!".into())
+    } else {
+        Ok("Failed".into())
+    }
 }
 
 #[tauri::command]
-async fn showinfolder(file_path:String) -> Result<String,()>{
-    Command::new("explorer").args(["/select,", &file_path]).spawn()
+async fn showinfolder(file_name: String) -> Result<String, ()> {
+    let downloads = dirs::download_dir().expect("Could not find downloads directory");
+    let finalpath = downloads.join(file_name);
+    let fp = finalpath.to_str().unwrap();
+
+    println!("save path: {}", fp);
+    Command::new("explorer")
+        .args(["/select,", fp])
+        .spawn()
         .unwrap();
     Ok(format!("Done"))
 }
 
 #[tauri::command]
-async fn encryptfile(file_path: String, file_name: String) -> Result<String, ()> {
+async fn encryptfile(file_path: String, file_name: String, algo: usize) -> Result<String, ()> {
     println!("path: {}", file_path);
+    println!("algo: {}", algo);
     let path = Path::new(&file_path);
     let display = path.display();
-
-    // Open the path in read-only mode, returns `io::Result<File>`
     let mut file = match File::open(&path) {
         Err(why) => panic!("couldn't open {}: {}", display, why),
         Ok(file) => file,
     };
     let mut contents = Vec::new();
     let _ = file.read_to_end(&mut contents);
-    // contents.resize(100,0);
-
-    // println!("File contents: {:?}", contents);
-
-    // let iv = hex!("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff");
-    // rand::thread_rng().fill(&mut iv); 
-    // let mut mykey = String::from("000102030405060708090A0B0C0D0E0F");
-    // let mut mykey = [0u8; 16]; 
-    // rand::thread_rng().fill(&mut mykey);
-    let iv = rand::thread_rng().gen::<[u8; 16]>();
-    let key =  rand::thread_rng().gen::<[u8; 16]>();
-    // let hex_key = encode(mykey); 
-
-    println!("Key: {}", encode(key));
-    println!("Key len: {}", key.len());
-    
-    println!("IV: {}", encode(iv));
-    println!("Iv len: {}", iv.len());
-    // println!("type: {}", type_of(&key));
-   
-    // println!("IV: {:?}", iv);
-
-
-    // let key = hex::decode(hex_key).expect("Decoding failed");
-
-    let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
-
     let pos = contents.len();
-    // println!("pos : {}" , pos);
-
-    // let mut buffer = [0u8; 1000000];
-    let mut buffer: Vec<u8> = vec![0u8; pos+100]; 
-    // println!("buf: {:?}", buffer.len());
-
-
+    println!("pos {}", pos);
+    let mut buffer: Vec<u8> = vec![0u8; pos + 100];
     buffer[..pos].copy_from_slice(&contents);
-    // println!("buf: {:?}", buffer);
-
-    let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
-    let finalchipher = [ciphertext, &iv].concat();
-    let downloads = dirs::download_dir().expect("Could not find downloads directory");
-    let finalpath = downloads.join(file_name);
+    if algo == 128 {
+        let iv = rand::thread_rng().gen::<[u8; 16]>();
+        let key = rand::thread_rng().gen::<[u8; 16]>();
+        println!("Key: {}", encode(key));
+        println!("IV: {}", encode(iv));
+        let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
+        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let finalchipher = [ciphertext, &iv].concat();
+        let downloads = dirs::download_dir().expect("Could not find downloads directory");
+        let finalpath = downloads.join(file_name);
+        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+        fil.write_all(&finalchipher)
+            .expect("Error Saving Encrypted File");
+        Ok(encode(key).into())
+    } else if algo == 192 {
+        let iv = rand::thread_rng().gen::<[u8; 16]>();
+        let key = rand::thread_rng().gen::<[u8; 24]>();
+        println!("Key: {}", encode(key));
+        println!("IV: {}", encode(iv));
+        let cipher = Aes192Cbc::new_from_slices(&key, &iv).unwrap();
+        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let finalchipher = [ciphertext, &iv].concat();
+        let downloads = dirs::download_dir().expect("Could not find downloads directory");
+        let finalpath = downloads.join(file_name);
+        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+        fil.write_all(&finalchipher)
+            .expect("Error Saving Encrypted File");
+        Ok(encode(key).into())
+    } else if algo == 256 {
+        let iv = rand::thread_rng().gen::<[u8; 16]>();
+        let key = rand::thread_rng().gen::<[u8; 32]>();
+        println!("Key: {}", encode(key));
+        println!("IV: {}", encode(iv));
+        let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
+        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let finalchipher = [ciphertext, &iv].concat();
+        let downloads = dirs::download_dir().expect("Could not find downloads directory");
+        let finalpath = downloads.join(file_name);
+        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+        fil.write_all(&finalchipher)
+            .expect("Error Saving Encrypted File");
+        Ok(encode(key).into())
+    } else {
+        Ok(format!("failed"))
+    }
     // println!("type chi: {}", type_of(ciphertext));
     // println!("type chi: {:?}", ciphertext);
     // println!("type chi: {:?}", finalChipher);
-    let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
-    fil.write_all(&finalchipher).expect("Error Saving Encrypted File");
-    Ok(encode(key).into())
 
     // println!("\nCiphertext: {:?}", hex::encode(ciphertext));
     // println!("\nCiphertext: {:?}", ciphertext);
+}
 
-    // Decrypt Code
+#[tauri::command]
+async fn encrypttext(text_str: String, algo: usize) -> (String, String) {
+    println!("encrypt text working...");
+    let plaintext = text_str.as_bytes();
+    let pos = plaintext.len();
+    let mut buffer: Vec<u8> = vec![0u8; pos + 100];
+    buffer[..pos].copy_from_slice(&plaintext);
+    if algo == 128 {
+        let key = rand::thread_rng().gen::<[u8; 16]>();
+        let iv = rand::thread_rng().gen::<[u8; 16]>();
+        println!("key : {}", encode(&key));
+        println!("iv : {}", encode(&iv));
+        let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
 
-    // let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
-    // let mut buf = ciphertext.to_vec();
-    // let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
-    // let mut fil = File::create(r"C:\Users\manis\Desktop\l.txt").expect("something");
-    // fil.write_all(decrypted_ciphertext).expect("something");
-    // println!("\nDecrypted: {:?}", decrypted_ciphertext);
+        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let finalchipher = [ciphertext, &iv].concat();
+        println!("finalchipher : {:?}", finalchipher);
+        (encode(finalchipher).into(), encode(key).into())
+    } else if algo == 192 {
+        let key = rand::thread_rng().gen::<[u8; 24]>();
+        let iv = rand::thread_rng().gen::<[u8; 16]>();
+        println!("key : {}", encode(&key));
+        println!("iv : {}", encode(&iv));
+        let cipher = Aes192Cbc::new_from_slices(&key, &iv).unwrap();
+        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let finalchipher = [ciphertext, &iv].concat();
+        println!("finalchipher : {:?}", finalchipher);
+        (encode(finalchipher).into(), encode(key).into())
+    } else if algo == 256 {
+        let key = rand::thread_rng().gen::<[u8; 32]>();
+        let iv = rand::thread_rng().gen::<[u8; 16]>();
+        println!("key : {}", encode(&key));
+        println!("iv : {}", encode(&iv));
+        let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
+        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let finalchipher = [ciphertext, &iv].concat();
+        println!("finalchipher : {:?}", finalchipher);
+
+        (encode(finalchipher).into(), encode(key).into())
+    } else {
+        ("failed".into(), "failed".into())
+    }
+}
+
+#[tauri::command]
+async fn decrypttext(text: String, key: String, algo: usize) -> Result<String, ()> {
+    // let plaintext = text.as_bytes();
+    let plaintext = hex::decode(text).expect("Decoding failed");
+    println!("plain : {:?}", plaintext);
+    let (content, iv) = plaintext.split_at(plaintext.len() - 16);
+    println!("content : {:?}", content);
+    let fkey = hex::decode(key).expect("Decoding failed");
+    let mut buf = content.to_vec();
+
+    println!("key : {}", encode(&fkey));
+    println!("iv : {}", encode(&iv));
+    if algo == 128 {
+        let cipher = Aes128Cbc::new_from_slices(&fkey, &iv).unwrap();
+        let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+        let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
+        Ok(s.to_string())
+    } else if algo == 192 {
+        let cipher = Aes192Cbc::new_from_slices(&fkey, &iv).unwrap();
+        let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+        let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
+        Ok(s.to_string())
+    } else if algo == 256 {
+        let cipher = Aes256Cbc::new_from_slices(&fkey, &iv).unwrap();
+        let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+        let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
+        Ok(s.to_string())
+    } else {
+        Ok("failed".into())
+    }
 }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, encryptfile, decryptfile, showinfolder])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            encryptfile,
+            decryptfile,
+            showinfolder,
+            encrypttext,
+            decrypttext
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

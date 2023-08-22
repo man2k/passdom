@@ -4,24 +4,54 @@ import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { open } from "@tauri-apps/api/dialog";
+import { message, open } from "@tauri-apps/api/dialog";
 
 const Encrypt: ReactNode = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
-  const [_decType, setDncType] = useState<string>("");
+  const [text, setText] = useState<string>();
+  const [chiphertext, setChiphertext] = useState<string>("");
   const [key, setKey] = useState<string>("");
-  const [filePath, setFilePath] = useState<string | string[]>("");
+  const [filePath, setFilePath] = useState<string>("");
+  const [algo, setAlgo] = useState<number>(0);
 
+  const handleAlgoChange = (e) => {
+    if (e.target.value === "aes-128-cbc") {
+      setAlgo(128);
+    } else if (e.target.value === "aes-192-cbc") {
+      setAlgo(192);
+    } else if (e.target.value === "aes-256-cbc") {
+      setAlgo(256);
+    }
+  };
   const decryptFile = async () => {
     const fileName = filePath.split("\\").pop().replace(".enc", "");
-    invoke("decryptfile", {
-      filePath: filePath,
-      fileName: fileName,
-      key: key,
-    }).then((message) => {
-      console.log(message);
-      window.my_modal_2.showModal();
-    });
+    if (textOrFile === false) {
+      invoke("decryptfile", {
+        filePath: filePath,
+        fileName: fileName,
+        key: key,
+        algo: algo,
+      }).then((message) => {
+        console.log(message);
+        window.my_modal_2.showModal();
+      });
+    } else if (textOrFile === true) {
+      console.log(text);
+      console.log(key);
+      invoke("decrypttext", {
+        text: text,
+        key: key,
+        algo: algo,
+      }).then((message) => {
+        console.log(message);
+        setChiphertext(message);
+        window.my_modal_2.showModal();
+      });
+    }
+  };
+
+  const handleTextchange = (e) => {
+    setText(e.target.value);
   };
 
   const handleFileChange = async (e) => {
@@ -69,6 +99,7 @@ const Encrypt: ReactNode = () => {
               <textarea
                 className="textarea textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-10"
                 placeholder="Type here"
+                onChange={handleTextchange}
               ></textarea>
             ) : (
               <button
@@ -83,7 +114,7 @@ const Encrypt: ReactNode = () => {
             <select
               className="select bg-amber-500 w-full max-w-xs uppercase text-black"
               onChange={(e) => {
-                setDncType(e.target.value);
+                handleAlgoChange(e);
               }}
             >
               <option disabled selected className="lowercase">
@@ -95,7 +126,7 @@ const Encrypt: ReactNode = () => {
             </select>
             <div>
               <input
-                type="text"
+                type="password"
                 placeholder="Enter your Key"
                 className="input input-bordered input-secondary w-full max-w-xs"
                 onChange={(e) => {
@@ -116,21 +147,21 @@ const Encrypt: ReactNode = () => {
               <dialog id="my_modal_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">
-                    File Decrypted Successfully.
+                    {textOrFile === false
+                      ? "File Decrypted Successfully"
+                      : "Here is your decrypted text :"}
                   </h3>
+                  <h3>{chiphertext}</h3>
                   <button
                     className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
                     onClick={() => {
                       const fileName = filePath
-                        .split("\\")
+                        ?.split("\\")
                         .pop()
                         .replace(".enc", "");
-                      const ffilePath = filePath.split("\\");
-                      ffilePath.pop();
-                      const fp = ffilePath.join("\\") + "\\" + fileName;
 
                       invoke("showinfolder", {
-                        filePath: fp,
+                        filePath: fileName,
                       }).then((message) => {
                         console.log(message);
                         window.my_modal_2.showModal();

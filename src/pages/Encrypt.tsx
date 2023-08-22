@@ -4,15 +4,17 @@ import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { open } from "@tauri-apps/api/dialog";
+import { message, open } from "@tauri-apps/api/dialog";
 // import CryptoJS from "crypto-js";
 // import fileDownload from "js-file-download";
 
 const Encrypt: ReactNode = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
-  const [_encType, setEncType] = useState<string>("");
+  const [text, setText] = useState<string>();
+  const [chiphertext, setChiphertext] = useState<string>("");
   const [key, setKey] = useState<string>("");
-  const [filePath, setFilePath] = useState<string | string[]>("");
+  const [filePath, setFilePath] = useState<string>("");
+  const [algo, setAlgo] = useState<number>(0);
 
   // const convertWordArrayToUint8Array = async (wordArray) => {
   //   var arrayOfWords = wordArray.hasOwnProperty("words") ? wordArray.words : [];
@@ -33,6 +35,10 @@ const Encrypt: ReactNode = () => {
   //   return uInt8Array;
   // };
 
+  const handleTextchange = (e) => {
+    setText(e.target.value);
+  };
+
   const encryptFile = async () => {
     // const f = file;
     // const buf = await f?.arrayBuffer();
@@ -52,16 +58,6 @@ const Encrypt: ReactNode = () => {
     // let fileEnc = new Blob([encrypted]);
     // fileDownload(fileEnc, "");
 
-    invoke("encryptfile", {
-      filePath: filePath,
-      fileName: filePath.split("\\").pop() + ".enc",
-    })
-      .then((message) => {
-        setKey(message);
-        window.my_modal_2.showModal();
-      })
-      .catch((error) => console.error(error));
-
     // let decrypted = CryptoJS.AES.decrypt(encrypted, key.toString());
 
     // console.log(decrypted);
@@ -70,6 +66,32 @@ const Encrypt: ReactNode = () => {
     // let fileDec = new Blob([dec]);
     // console.log(fileDec);
     // fileDownload(fileDec, "");
+    // console.log(algo);
+    // console.log(typeof algo);
+    if (textOrFile === false) {
+      invoke("encryptfile", {
+        filePath: filePath,
+        fileName: filePath.split("\\").pop() + ".enc",
+        algo: algo,
+      })
+        .then((message) => {
+          setKey(message);
+          window.my_modal_2.showModal();
+        })
+        .catch((error) => console.error(error));
+    } else if (textOrFile === true) {
+      invoke("encrypttext", {
+        textStr: text,
+        algo: algo,
+      })
+        .then((message) => {
+          console.log(message);
+          setKey(message[1]);
+          setChiphertext(message[0]);
+          window.my_modal_4.showModal();
+        })
+        .catch((error) => console.error(error));
+    }
   };
 
   const handleFileChange = async (e) => {
@@ -92,6 +114,16 @@ const Encrypt: ReactNode = () => {
     } else {
       // user selected a single file
       setFilePath(selected);
+    }
+  };
+
+  const handleAlgoChange = (e) => {
+    if (e.target.value === "aes-128-cbc") {
+      setAlgo(128);
+    } else if (e.target.value === "aes-192-cbc") {
+      setAlgo(192);
+    } else if (e.target.value === "aes-256-cbc") {
+      setAlgo(256);
     }
   };
 
@@ -128,17 +160,13 @@ const Encrypt: ReactNode = () => {
             </div>
             {textOrFile ? (
               <textarea
-                className="textarea textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-10"
+                className="textarea textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-10 shadow-lg shadow-gray-800"
                 placeholder="Type here"
+                onChange={handleTextchange}
               ></textarea>
             ) : (
-              // <input
-              //   type="file"
-              //   className="file-input file-input-error w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black"
-              //   onClick={handleFileChange}
-              // />
               <button
-                className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden"
+                className="btn glass bg-inherit w-full h-10 rounded-xl shadow-lg shadow-gray-800 overflow-hidden"
                 onClick={handleFileChange}
               >
                 {filePath != ""
@@ -147,12 +175,12 @@ const Encrypt: ReactNode = () => {
               </button>
             )}
             <select
-              className="select bg-amber-500 w-full max-w-xs uppercase text-black"
+              className="select select-secondary bg-gray-800 w-full max-w-xs uppercase text-stone-200 shadow-lg shadow-gray-800 mt-0.5"
               onChange={(e) => {
-                setEncType(e.target.value);
+                handleAlgoChange(e);
               }}
             >
-              <option disabled selected className="lowercase">
+              <option disabled selected className="lowercase text-black">
                 Select your algorithm!
               </option>
               {ChipherList.map((item) => (
@@ -162,8 +190,15 @@ const Encrypt: ReactNode = () => {
 
             <div className="card-actions justify-end">
               <button
-                className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
+                className="btn bg-slate-400 hover:bg-teal-500 w-full h-full rounded-lg text-black mt-0.5 shadow-lg shadow-gray-800"
+                // disabled={algo != 0 && filePath != "" ? false : true}
                 onClick={async () => {
+                  // if (
+                  //   (algo != 128 || algo != 192 || algo != 256) &&
+                  //   (filePath == "" || text != "")
+                  // ) {
+                  //   window.my_modal_3.showModal();
+                  // }
                   await encryptFile();
                 }}
               >
@@ -174,14 +209,29 @@ const Encrypt: ReactNode = () => {
                   <h3 className="font-bold text-lg">
                     File Encrypted Successfully.
                   </h3>
-                  <p className="py-4">
-                    Your Key:{" "}
-                    <span
-                      className="cursor-pointer"
+                  <p className="py-4 overflow-hidden">
+                    Your Key: <br />
+                    <textarea
+                      className="textarea textarea-accent w-full text-white bg-slate-800 font-mono cursor-pointer"
+                      readOnly
+                      value={key}
+                      onClick={(e) => {
+                        if (e.target.value !== "") {
+                          navigator.clipboard.writeText(e.target.value);
+                          e.target.value = "copied to clipboard..";
+                          setTimeout(() => {
+                            e.target.value = key;
+                          }, 900);
+                        }
+                      }}
+                    />
+                    {/* {key} */}
+                    {/* </textarea> */}
+                    {/* <span
+                      className=""
                       onClick={(e) => {
                         if (e.target.innerText !== "") {
                           navigator.clipboard.writeText(e.target.innerText);
-                          // let tmp = e.target.innerText;
                           e.target.innerText = "copied to clipboard..";
                           setTimeout(() => {
                             e.target.innerText = key;
@@ -189,8 +239,8 @@ const Encrypt: ReactNode = () => {
                         }
                       }}
                     >
-                      {key}
-                    </span>
+                      <p className="cursor-pointer flex break-words">{key}</p>
+                    </span> */}
                     <br />
                     <span
                       className="text-xs italic ml-72 shadow-lg border-2 text-white border-gray-500 rounded-full p-1 cursor-pointer"
@@ -211,22 +261,84 @@ const Encrypt: ReactNode = () => {
                   <button
                     className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
                     onClick={() => {
-                      filePath;
                       const ffilePath = filePath.split("\\");
-                      const fileName = ffilePath.pop();
-                      const fp =
-                        ffilePath.join("\\") + "\\" + fileName + ".enc";
-                      console.log(fp);
+                      const fileName = ffilePath.pop() + ".enc";
+                      // const fp =
+                      //   ffilePath.join("\\") + "\\" + fileName + ".enc";
+                      // console.log(fp);
                       invoke("showinfolder", {
-                        filePath: fp,
+                        fileName: fileName,
                       }).then((message) => {
                         console.log(message);
-                        window.my_modal_2.showModal();
+                        // window.my_modal_2.showModal();
                       });
                     }}
                   >
                     Show in folder
                   </button>
+                </form>
+                <form method="dialog" className="modal-backdrop">
+                  <button>close</button>
+                </form>
+              </dialog>
+              <dialog id="my_modal_3" className="modal">
+                <form method="dialog" className="modal-box">
+                  <h3 className="font-bold text-lg">Wait!</h3>
+                  <p className="py-4">
+                    Some of the required inputs are missing.
+                    <br />
+                    Please Recheck.
+                  </p>
+                </form>
+                <form method="dialog" className="modal-backdrop">
+                  <button>close</button>
+                </form>
+              </dialog>
+              <dialog id="my_modal_4" className="modal">
+                <form method="dialog" className="modal-box">
+                  <h3 className="font-bold text-lg">Encryption Successful!</h3>
+                  <p className="py-4 flex-col">
+                    Your Key:
+                    <input
+                      type="text"
+                      value={key}
+                      readOnly
+                      className="input input-bordered input-primary w-80 ml-14 shadow-lg shadow-violet-700 border-0 bg-slate-800 cursor-pointer"
+                      onClick={(e) => {
+                        if (e.target.value !== "") {
+                          navigator.clipboard.writeText(key);
+                          // let tmp = e.target.innerText;
+                          e.target.value = "copied to clipboard..";
+                          setTimeout(() => {
+                            e.target.value = key;
+                          }, 900);
+                        }
+                      }}
+                    />
+                    <br />
+                    Encrypted Text:
+                    <input
+                      type="text"
+                      value={chiphertext}
+                      readOnly
+                      className="input input-bordered input-accent w-full max-w-xs ml-1 mt-2 shadow-lg shadow-violet-700 border-0 bg-slate-800 cursor-pointer"
+                      onClick={(e) => {
+                        if (e.target.value !== "") {
+                          navigator.clipboard.writeText(chiphertext);
+                          // let tmp = e.target.innerText;
+                          e.target.value = "copied to clipboard..";
+                          setTimeout(() => {
+                            e.target.value = chiphertext;
+                          }, 900);
+                        }
+                      }}
+                    />
+                    <div className="mt-5 ml-14">
+                      <span className="text-xs italic ml-72 shadow-lg border-2 text-white border-gray-500 rounded-full p-1 cursor-default">
+                        click to copy
+                      </span>
+                    </div>
+                  </p>
                 </form>
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>
