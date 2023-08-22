@@ -1,13 +1,39 @@
-import { FC } from "react";
+import { ReactNode } from "react";
 import decryption from "../assets/decryption.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { useState } from "react";
+import { invoke } from "@tauri-apps/api/tauri";
+import { open } from "@tauri-apps/api/dialog";
 
-const Encrypt: FC = () => {
+const Encrypt: ReactNode = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
   const [_decType, setDncType] = useState<string>("");
+  const [key, setKey] = useState<string>("");
+  const [filePath, setFilePath] = useState<string | string[]>("");
 
+  const decryptFile = async () => {
+    const fileName = filePath.split("\\").pop().replace(".enc", "");
+    invoke("decryptfile", {
+      filePath: filePath,
+      fileName: fileName,
+      key: key,
+    }).then((message) => {
+      console.log(message);
+      window.my_modal_2.showModal();
+    });
+  };
+
+  const handleFileChange = async (e) => {
+    const selected = await open({
+      multiple: false,
+    });
+
+    if (selected === null) {
+    } else {
+      setFilePath(selected);
+    }
+  };
   return (
     <div className="w-screen h-screen font-mono">
       <div className="flex justify-center h-full items-center">
@@ -45,10 +71,14 @@ const Encrypt: FC = () => {
                 placeholder="Type here"
               ></textarea>
             ) : (
-              <input
-                type="file"
-                className="file-input file-input-error w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black"
-              />
+              <button
+                className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden"
+                onClick={handleFileChange}
+              >
+                {filePath != ""
+                  ? `${filePath.split("\\").pop()}`
+                  : "Choose File"}
+              </button>
             )}
             <select
               className="select bg-amber-500 w-full max-w-xs uppercase text-black"
@@ -63,11 +93,57 @@ const Encrypt: FC = () => {
                 <option key={item.value}>{item.label}</option>
               ))}
             </select>
-
+            <div>
+              <input
+                type="text"
+                placeholder="Enter your Key"
+                className="input input-bordered input-secondary w-full max-w-xs"
+                onChange={(e) => {
+                  setKey(e.target.value);
+                }}
+              />
+            </div>
             <div className="card-actions justify-end">
-              <button className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black">
+              <button
+                className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
+                onClick={async () => {
+                  await decryptFile();
+                  // window.my_modal_2.showModal();
+                }}
+              >
                 Decrypt
               </button>
+              <dialog id="my_modal_2" className="modal">
+                <form method="dialog" className="modal-box">
+                  <h3 className="font-bold text-lg">
+                    File Decrypted Successfully.
+                  </h3>
+                  <button
+                    className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+                    onClick={() => {
+                      const fileName = filePath
+                        .split("\\")
+                        .pop()
+                        .replace(".enc", "");
+                      const ffilePath = filePath.split("\\");
+                      ffilePath.pop();
+                      const fp = ffilePath.join("\\") + "\\" + fileName;
+
+                      invoke("showinfolder", {
+                        filePath: fp,
+                      }).then((message) => {
+                        console.log(message);
+                        window.my_modal_2.showModal();
+                      });
+                    }}
+                  >
+                    Show in folder
+                  </button>
+                </form>
+                <form method="dialog" className="modal-backdrop">
+                  <button>close</button>
+                </form>
+              </dialog>
             </div>
           </div>
         </div>

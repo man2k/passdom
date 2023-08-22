@@ -3,35 +3,35 @@ import encryption from "../assets/encryption.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { useState } from "react";
-import CryptoJS from "crypto-js";
-import fileDownload from "js-file-download";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
+// import CryptoJS from "crypto-js";
+// import fileDownload from "js-file-download";
 
 const Encrypt: ReactNode = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
   const [_encType, setEncType] = useState<string>("");
+  const [key, setKey] = useState<string>("");
+  const [filePath, setFilePath] = useState<string | string[]>("");
 
-  const [file, setFile] = useState<string>("");
-
-  const convertWordArrayToUint8Array = async (wordArray) => {
-    var arrayOfWords = wordArray.hasOwnProperty("words") ? wordArray.words : [];
-    var length = wordArray.hasOwnProperty("sigBytes")
-      ? wordArray.sigBytes
-      : arrayOfWords.length * 4;
-    var uInt8Array = new Uint8Array(length),
-      index = 0,
-      word,
-      i;
-    for (i = 0; i < length; i++) {
-      word = arrayOfWords[i];
-      uInt8Array[index++] = word >> 24;
-      uInt8Array[index++] = (word >> 16) & 0xff;
-      uInt8Array[index++] = (word >> 8) & 0xff;
-      uInt8Array[index++] = word & 0xff;
-    }
-    return uInt8Array;
-  };
+  // const convertWordArrayToUint8Array = async (wordArray) => {
+  //   var arrayOfWords = wordArray.hasOwnProperty("words") ? wordArray.words : [];
+  //   var length = wordArray.hasOwnProperty("sigBytes")
+  //     ? wordArray.sigBytes
+  //     : arrayOfWords.length * 4;
+  //   var uInt8Array = new Uint8Array(length),
+  //     index = 0,
+  //     word,
+  //     i;
+  //   for (i = 0; i < length; i++) {
+  //     word = arrayOfWords[i];
+  //     uInt8Array[index++] = word >> 24;
+  //     uInt8Array[index++] = (word >> 16) & 0xff;
+  //     uInt8Array[index++] = (word >> 8) & 0xff;
+  //     uInt8Array[index++] = word & 0xff;
+  //   }
+  //   return uInt8Array;
+  // };
 
   const encryptFile = async () => {
     // const f = file;
@@ -39,8 +39,8 @@ const Encrypt: ReactNode = () => {
     // console.log(buf);
 
     // const iv = window.crypto.getRandomValues(new Uint8Array(16));
-    const key = window.crypto.getRandomValues(new Uint8Array(24));
-    console.log(key.toString());
+    // const key = window.crypto.getRandomValues(new Uint8Array(24));
+    // console.log(key.toString());
     // const wordArray = CryptoJS.lib.WordArray.create(buf);
     // console.log(wordArray);
     // let encrypted = CryptoJS.AES.encrypt(wordArray, key.toString(), {
@@ -51,7 +51,16 @@ const Encrypt: ReactNode = () => {
     // console.log(encrypted);
     // let fileEnc = new Blob([encrypted]);
     // fileDownload(fileEnc, "");
-    invoke("encryptfile", { filePath: file, key: key });
+
+    invoke("encryptfile", {
+      filePath: filePath,
+      fileName: filePath.split("\\").pop() + ".enc",
+    })
+      .then((message) => {
+        setKey(message);
+        window.my_modal_2.showModal();
+      })
+      .catch((error) => console.error(error));
 
     // let decrypted = CryptoJS.AES.decrypt(encrypted, key.toString());
 
@@ -74,7 +83,7 @@ const Encrypt: ReactNode = () => {
       //   },
       // ],
     });
-    console.log(selected);
+    // console.log(selected?.toString());
     // if (Array.isArray(selected)) {
     // user selected multiple files
     // } else
@@ -82,7 +91,7 @@ const Encrypt: ReactNode = () => {
       // user cancelled the selection
     } else {
       // user selected a single file
-      setFile(selected);
+      setFilePath(selected);
     }
   };
 
@@ -132,7 +141,9 @@ const Encrypt: ReactNode = () => {
                 className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden"
                 onClick={handleFileChange}
               >
-                {file != "" ? `${file.split("\\").pop()}` : "Choose File"}
+                {filePath != ""
+                  ? `${filePath.split("\\").pop()}`
+                  : "Choose File"}
               </button>
             )}
             <select
@@ -152,12 +163,75 @@ const Encrypt: ReactNode = () => {
             <div className="card-actions justify-end">
               <button
                 className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
-                onClick={() => {
-                  encryptFile();
+                onClick={async () => {
+                  await encryptFile();
                 }}
               >
                 Encrypt
               </button>
+              <dialog id="my_modal_2" className="modal">
+                <form method="dialog" className="modal-box">
+                  <h3 className="font-bold text-lg">
+                    File Encrypted Successfully.
+                  </h3>
+                  <p className="py-4">
+                    Your Key:{" "}
+                    <span
+                      className="cursor-pointer"
+                      onClick={(e) => {
+                        if (e.target.innerText !== "") {
+                          navigator.clipboard.writeText(e.target.innerText);
+                          // let tmp = e.target.innerText;
+                          e.target.innerText = "copied to clipboard..";
+                          setTimeout(() => {
+                            e.target.innerText = key;
+                          }, 900);
+                        }
+                      }}
+                    >
+                      {key}
+                    </span>
+                    <br />
+                    <span
+                      className="text-xs italic ml-72 shadow-lg border-2 text-white border-gray-500 rounded-full p-1 cursor-pointer"
+                      onClick={(e) => {
+                        if (e.target.innerText !== "") {
+                          navigator.clipboard.writeText(key);
+                          // let tmp = e.target.innerText;
+                          e.target.innerText = "copied to clipboard..";
+                          setTimeout(() => {
+                            e.target.innerText = "click to copy";
+                          }, 900);
+                        }
+                      }}
+                    >
+                      click to copy
+                    </span>
+                  </p>
+                  <button
+                    className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+                    onClick={() => {
+                      filePath;
+                      const ffilePath = filePath.split("\\");
+                      const fileName = ffilePath.pop();
+                      const fp =
+                        ffilePath.join("\\") + "\\" + fileName + ".enc";
+                      console.log(fp);
+                      invoke("showinfolder", {
+                        filePath: fp,
+                      }).then((message) => {
+                        console.log(message);
+                        window.my_modal_2.showModal();
+                      });
+                    }}
+                  >
+                    Show in folder
+                  </button>
+                </form>
+                <form method="dialog" className="modal-backdrop">
+                  <button>close</button>
+                </form>
+              </dialog>
             </div>
           </div>
         </div>

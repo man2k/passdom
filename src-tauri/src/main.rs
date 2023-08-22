@@ -1,27 +1,21 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use std::fs::File;
+use std::path::Path;
+use std::env;
+use std::str;
+use std::io::prelude::*;
 use aes::Aes128;
 use aes::Aes192;
 use aes::Aes256;
 use block_modes::block_padding::Pkcs7;
 use block_modes::{BlockMode, Cbc};
-use hex_literal::hex;
 use rand::Rng;
 use hex::encode;
-extern crate buffer;
-// use std::io::Write;
-// use std::fmt::Write;
+use std::any::type_name;
+use dirs;
+use std::process::Command;
 
-// use core::slice::SlicePattern;
-use std::io::prelude::*;
-use buffer::ReadBuffer;
-// use std::any::type_name;
-use std::env;
-// use std::error::Error;
-// use std::fs;
-use std::fs::File;
-use std::path::Path;
-use std::str;
 
 type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 type Aes256Cbc = Cbc<Aes256, Pkcs7>;
@@ -33,12 +27,48 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-// fn type_of<T>(_: T) -> &'static str {
-//     type_name::<T>()
-// }
+fn type_of<T>(_: T) -> &'static str {
+    type_name::<T>()
+}
 
 #[tauri::command]
-async fn encryptfile(file_path: String) {
+async fn decryptfile(file_path: String, file_name: String, key: String) ->  Result<String, String>{
+    println!("path: {}", file_path);
+    let path = Path::new(&file_path);
+    let display = path.display();
+
+    let mut file = match File::open(&path) {
+        Err(why) => panic!("couldn't open {}: {}", display, why),
+        Ok(file) => file,
+    };
+    let mut contents = Vec::new();
+    let _ = file.read_to_end(&mut contents);
+
+    let (content, iv) = contents.split_at(contents.len()-16);
+    let fkey = hex::decode(key).expect("Decoding failed");
+
+    println!("IV: {}", encode(&iv));
+    println!("Key: {}", encode(&fkey));
+
+    let cipher = Aes128Cbc::new_from_slices(&fkey,  &iv).unwrap();
+    let mut buf = content.to_vec();
+    let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+    let downloads = dirs::download_dir().expect("Could not find downloads directory");
+    let finalpath = downloads.join(file_name);
+    let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+    fil.write_all(&decrypted_ciphertext).expect("Error Saving Encrypted File");
+    Ok("This worked!".into())
+}
+
+#[tauri::command]
+async fn showinfolder(file_path:String) -> Result<String,()>{
+    Command::new("explorer").args(["/select,", &file_path]).spawn()
+        .unwrap();
+    Ok(format!("Done"))
+}
+
+#[tauri::command]
+async fn encryptfile(file_path: String, file_name: String) -> Result<String, ()> {
     println!("path: {}", file_path);
     let path = Path::new(&file_path);
     let display = path.display();
@@ -49,7 +79,8 @@ async fn encryptfile(file_path: String) {
         Ok(file) => file,
     };
     let mut contents = Vec::new();
-    file.read_to_end(&mut contents);
+    let _ = file.read_to_end(&mut contents);
+    // contents.resize(100,0);
 
     // println!("File contents: {:?}", contents);
 
@@ -63,7 +94,13 @@ async fn encryptfile(file_path: String) {
     // let hex_key = encode(mykey); 
 
     println!("Key: {}", encode(key));
+    println!("Key len: {}", key.len());
+    
     println!("IV: {}", encode(iv));
+    println!("Iv len: {}", iv.len());
+    // println!("type: {}", type_of(&key));
+   
+    // println!("IV: {:?}", iv);
 
 
     // let key = hex::decode(hex_key).expect("Decoding failed");
@@ -71,7 +108,7 @@ async fn encryptfile(file_path: String) {
     let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
 
     let pos = contents.len();
-    println!("pos : {}" , pos);
+    // println!("pos : {}" , pos);
 
     // let mut buffer = [0u8; 1000000];
     let mut buffer: Vec<u8> = vec![0u8; pos+100]; 
@@ -82,25 +119,32 @@ async fn encryptfile(file_path: String) {
     // println!("buf: {:?}", buffer);
 
     let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
-
-    let mut fil = File::create(r"C:\Users\manis\Desktop\encypted.enc").expect("something");
-    fil.write_all(ciphertext).expect("something");
+    let finalchipher = [ciphertext, &iv].concat();
+    let downloads = dirs::download_dir().expect("Could not find downloads directory");
+    let finalpath = downloads.join(file_name);
+    // println!("type chi: {}", type_of(ciphertext));
+    // println!("type chi: {:?}", ciphertext);
+    // println!("type chi: {:?}", finalChipher);
+    let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+    fil.write_all(&finalchipher).expect("Error Saving Encrypted File");
+    Ok(encode(key).into())
 
     // println!("\nCiphertext: {:?}", hex::encode(ciphertext));
     // println!("\nCiphertext: {:?}", ciphertext);
 
     // Decrypt Code
-    let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
-    let mut buf = ciphertext.to_vec();
-    let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
-    let mut fil = File::create(r"C:\Users\manis\Desktop\l.txt").expect("something");
-    fil.write_all(decrypted_ciphertext).expect("something");
-    println!("\nDecrypted: {:?}", decrypted_ciphertext);
+
+    // let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
+    // let mut buf = ciphertext.to_vec();
+    // let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+    // let mut fil = File::create(r"C:\Users\manis\Desktop\l.txt").expect("something");
+    // fil.write_all(decrypted_ciphertext).expect("something");
+    // println!("\nDecrypted: {:?}", decrypted_ciphertext);
 }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, encryptfile])
+        .invoke_handler(tauri::generate_handler![greet, encryptfile, decryptfile, showinfolder])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
