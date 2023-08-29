@@ -1,10 +1,9 @@
-import { FC, ReactNode } from "react";
+import { FC, useEffect, useState } from "react";
 import encryption from "../assets/encryption.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
-import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { message, open } from "@tauri-apps/api/dialog";
+import { open } from "@tauri-apps/api/dialog";
 // import CryptoJS from "crypto-js";
 // import fileDownload from "js-file-download";
 
@@ -13,10 +12,19 @@ const Encrypt: FC = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
   const [text, setText] = useState<string>();
   const [chiphertext, setChiphertext] = useState<string>("");
-  const [key, setKey] = useState<string>("");
+  // const [key, setKey] = useState<string>("");
   const [filePath, setFilePath] = useState<string>("");
   const [algo, setAlgo] = useState<number>(0);
   const [password, setPassword] = useState<string>("");
+
+  useEffect(() => {
+    setFilePath("");
+    setText("");
+  }, [textOrFile]);
+  // useEffect(() => {
+  //   setFilePath("");
+  //   setText("");
+  // }, []);
 
   // const convertWordArrayToUint8Array = async (wordArray) => {
   //   var arrayOfWords = wordArray.hasOwnProperty("words") ? wordArray.words : [];
@@ -49,7 +57,6 @@ const Encrypt: FC = () => {
     // const f = file;
     // const buf = await f?.arrayBuffer();
     // console.log(buf);
-
     // const iv = window.crypto.getRandomValues(new Uint8Array(16));
     // const key = window.crypto.getRandomValues(new Uint8Array(24));
     // console.log(key.toString());
@@ -63,9 +70,7 @@ const Encrypt: FC = () => {
     // console.log(encrypted);
     // let fileEnc = new Blob([encrypted]);
     // fileDownload(fileEnc, "");
-
     // let decrypted = CryptoJS.AES.decrypt(encrypted, key.toString());
-
     // console.log(decrypted);
     // let dec = await convertWordArrayToUint8Array(decrypted);
     // console.log(dec);
@@ -74,6 +79,7 @@ const Encrypt: FC = () => {
     // fileDownload(fileDec, "");
     // console.log(algo);
     // console.log(typeof algo);
+
     if (textOrFile === false) {
       invoke("encryptfile", {
         filePath: filePath,
@@ -82,8 +88,8 @@ const Encrypt: FC = () => {
         algo: algo,
       })
         .then((message) => {
-          setKey(message);
-          window.my_modal_2.showModal();
+          // setKey(message);
+          window.my_modalenc_2.showModal();
         })
         .catch((error) => console.error(error));
     } else if (textOrFile === true) {
@@ -95,7 +101,7 @@ const Encrypt: FC = () => {
           console.log(message);
           setKey(message[1]);
           setChiphertext(message[0]);
-          window.my_modal_4.showModal();
+          window.my_modalenc_4.showModal();
         })
         .catch((error) => console.error(error));
     }
@@ -254,14 +260,14 @@ const Encrypt: FC = () => {
                   //   (algo != 128 || algo != 192 || algo != 256) &&
                   //   (filePath == "" || text != "")
                   // ) {
-                  //   window.my_modal_3.showModal();
+                  //   window.my_modalenc_3.showModal();
                   // }
                   await encryptFile();
                 }}
               >
                 Encrypt
               </button>
-              <dialog id="my_modal_2" className="modal">
+              <dialog id="my_modalenc_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">
                     File Encrypted Successfully.
@@ -327,7 +333,7 @@ const Encrypt: FC = () => {
                         fileName: fileName,
                       }).then((message) => {
                         console.log(message);
-                        // window.my_modal_2.showModal();
+                        // window.my_modalenc_2.showModal();
                       });
                     }}
                   >
@@ -338,7 +344,7 @@ const Encrypt: FC = () => {
                   <button>close</button>
                 </form>
               </dialog>
-              <dialog id="my_modal_3" className="modal">
+              <dialog id="my_modalenc_3" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">Wait!</h3>
                   <p className="py-4">
@@ -351,7 +357,7 @@ const Encrypt: FC = () => {
                   <button>close</button>
                 </form>
               </dialog>
-              <dialog id="my_modal_4" className="modal">
+              <dialog id="my_modalenc_4" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">Encryption Successful!</h3>
                   <p className="py-4 flex-col">

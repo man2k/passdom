@@ -1,10 +1,74 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import unsteg from "../assets/unsteg.png";
 import { TypeAnimation } from "react-type-animation";
-import { useState } from "react";
+import { invoke } from "@tauri-apps/api/tauri";
+import { open, save } from "@tauri-apps/api/dialog";
 
 const DeSteganograph: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
+  const [fileOrText, setFileOrText] = useState<boolean>(false);
+  const [imgPath, setImgPath] = useState<string>("");
+  const [data, setData] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [savePath, setSavePath] = useState<string | null>("");
+
+  useEffect(() => {
+    setImgPath("");
+    setData("");
+    setPassword("");
+    setSavePath("");
+  }, []);
+
+  const handleSubmit = async () => {
+    if (fileOrText) {
+      const filePath = await save({
+        filters: [
+          {
+            name: "",
+            extensions: ["*"],
+          },
+        ],
+      });
+      setSavePath(filePath);
+    }
+    invoke("desteganograph", {
+      imgPath: imgPath,
+      password: password,
+      fileortext: fileOrText,
+      finalpath: savePath,
+    })
+      .then((message) => {
+        // setStegFilePath(message);
+        window.my_modaldes_2.showModal();
+        if (!fileOrText) {
+          setData(message);
+          console.log(message);
+        }
+      })
+      .catch((error) => console.error(error));
+  };
+
+  const handlePassword = (e) => {
+    setPassword(e.target.value);
+  };
+  const handleImgChange = async () => {
+    const selected = await open({
+      multiple: false,
+      filters: [
+        {
+          name: "Image",
+          extensions: ["png", "jpeg", "jpg", "ico", "svg", "gif"],
+        },
+      ],
+    });
+    if (selected === null) {
+      // user cancelled the selection
+    } else {
+      // user selected a single file
+      // console.log(selected);
+      setImgPath(selected);
+    }
+  };
   return (
     <div className="w-screen h-screen font-mono">
       <div className="flex justify-center h-full items-center">
@@ -13,23 +77,34 @@ const DeSteganograph: FC = () => {
             <img src={unsteg} alt="unsteg" className="w-48 h-48 p-1" />
           </figure>
           <div className="card-body">
-            <h2 className="card-title font-mono text-black text-2xl h-6 w-full">
-              <span className="w-full">
-                <TypeAnimation
-                  sequence={["De-Steganograph", 800, "", 300]}
-                  speed={50}
-                  repeat={Infinity}
-                  wrapper="span"
-                  cursor={false}
+            <div className="flex flex-row">
+              <h2 className="card-title font-mono text-black text-2xl h-6 w-full">
+                <span className="w-full">
+                  <TypeAnimation
+                    sequence={["De-Steganograph", 800, "", 300]}
+                    speed={50}
+                    repeat={Infinity}
+                    wrapper="span"
+                    cursor={false}
+                  />
+                </span>
+              </h2>
+              {/* <div>
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm checkbox-warning border-black"
+                  onClick={() => {
+                    setFileOrText((prev) => !prev);
+                  }}
                 />
-              </span>
-            </h2>
-
+              </div> */}
+            </div>
             <div className="flex justify-center">
               <input
-                className="input input-bordered textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-10"
+                className="input input-bordered textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10 p-2 px-4"
                 placeholder="Type your password here"
                 type={isShown ? "text" : "password"}
+                onChange={handlePassword}
               />
               {isShown ? (
                 <svg
@@ -79,18 +154,68 @@ const DeSteganograph: FC = () => {
                 Choose the steganographed image:
               </span>
             </label>
-            <input
-              type="file"
-              className="file-input file-input-error w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black"
-            />
+            <button
+              className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden text-black"
+              onClick={handleImgChange}
+            >
+              {imgPath != "" ? `${imgPath.split("\\").pop()}` : "Choose Image"}
+            </button>
 
             <div className="card-actions justify-end">
               <button
                 className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
                 type="submit"
+                onClick={handleSubmit}
               >
                 SUBMIT
               </button>
+              <dialog id="my_modaldes_2" className="modal">
+                <form method="dialog" className="modal-box">
+                  <h3 className="font-bold text-lg ml-2">
+                    De - Steganography Successful!
+                  </h3>
+                  <br />
+                  <h3 className="italic ml-2 mb-1">Text found:</h3>
+                  {/* <br /> */}
+                  <span
+                    className="textarea textarea-accent w-full text-white bg-slate-800 font-mono cursor-pointer ml-4"
+                    onClick={(e) => {
+                      if (e.target.innerText !== "") {
+                        navigator.clipboard.writeText(data);
+                        let tmp = e.target.innerText;
+                        e.target.innerText = "copied to clipboard..";
+                        setTimeout(() => {
+                          e.target.innerText = data;
+                        }, 900);
+                      }
+                    }}
+                  >
+                    {data}
+                  </span>
+
+                  {/* <button
+                    className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+                    onClick={() => {
+                      const ffilePath = stgFilePath.split("\\");
+                      const fileName = ffilePath.pop();
+                      // const fp =
+                      //   ffilePath.join("\\") + "\\" + fileName + ".enc";
+                      // console.log(fp);
+                      invoke("showinfolder", {
+                        fileName: fileName,
+                      }).then((message) => {
+                        console.log(message);
+                        // window.my_modal_2.showModal();
+                      });
+                    }}
+                  >
+                    Show in folder
+                  </button> */}
+                </form>
+                <form method="dialog" className="modal-backdrop">
+                  <button>close</button>
+                </form>
+              </dialog>
             </div>
           </div>
         </div>

@@ -1,10 +1,9 @@
-import { FC, ReactNode } from "react";
+import { FC, useEffect, useState } from "react";
 import decryption from "../assets/decryption.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
-import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { message, open } from "@tauri-apps/api/dialog";
+import { open } from "@tauri-apps/api/dialog";
 
 const Encrypt: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
@@ -14,6 +13,16 @@ const Encrypt: FC = () => {
   const [password, setPassword] = useState<string>("");
   const [filePath, setFilePath] = useState<string>("");
   const [algo, setAlgo] = useState<number>(0);
+
+  useEffect(() => {
+    setFilePath("");
+    setText("");
+  }, [textOrFile]);
+
+  // useEffect(() => {
+  //   setFilePath("");
+  //   setText("");
+  // }, []);
 
   const handleAlgoChange = (e) => {
     if (e.target.value === "aes-128-cbc") {
@@ -34,7 +43,7 @@ const Encrypt: FC = () => {
         algo: algo,
       }).then((message) => {
         console.log(message);
-        window.my_modal_2.showModal();
+        window.my_modaldec_2.showModal();
       });
     } else if (textOrFile === true) {
       console.log(text);
@@ -46,7 +55,7 @@ const Encrypt: FC = () => {
       }).then((message) => {
         console.log(message);
         setChiphertext(message);
-        window.my_modal_2.showModal();
+        window.my_modaldec_2.showModal();
       });
     }
   };
@@ -183,12 +192,12 @@ const Encrypt: FC = () => {
                 className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
                 onClick={async () => {
                   await decryptFile();
-                  // window.my_modal_2.showModal();
+                  // window.my_modaldec_2.showModal();
                 }}
               >
                 Decrypt
               </button>
-              <dialog id="my_modal_2" className="modal">
+              <dialog id="my_modaldec_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">
                     {textOrFile === false
@@ -208,7 +217,7 @@ const Encrypt: FC = () => {
                         filePath: fileName,
                       }).then((message) => {
                         console.log(message);
-                        window.my_modal_2.showModal();
+                        window.my_modaldec_2.showModal();
                       });
                     }}
                   >

@@ -1,14 +1,14 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import steg from "../assets/steg.png";
 import { TypeAnimation } from "react-type-animation";
-import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { message, open } from "@tauri-apps/api/dialog";
+import { open } from "@tauri-apps/api/dialog";
 
 const Steganograph: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
   const [fileOrText, setFileOrText] = useState<boolean>(false);
   const [filePath, setFilePath] = useState<string>("");
+  const [stgFilePath, setStegFilePath] = useState<string>("");
   const [imgPath, setImgPath] = useState<string>("");
   const [data, setData] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -16,7 +16,7 @@ const Steganograph: FC = () => {
   useEffect(() => {
     setFilePath("");
     setData("");
-  }, [fileOrText]);
+  }, []);
 
   const handleData = (e) => {
     setData(e.target.value);
@@ -62,13 +62,13 @@ const Steganograph: FC = () => {
     invoke("steganograph", {
       imgPath: imgPath,
       data: data,
-      password: "password",
+      password: password,
       filePath: filePath,
     })
       .then((message) => {
-        // setKey(message);
-        // window.my_modal_2.showModal();
-        console.log(message);
+        setStegFilePath(message);
+        window.my_modalstg_2.showModal();
+        // console.log(message);
       })
       .catch((error) => console.error(error));
   };
@@ -93,7 +93,7 @@ const Steganograph: FC = () => {
                   />
                 </span>
               </h2>
-              <div>
+              {/* <div>
                 <input
                   type="checkbox"
                   className="checkbox checkbox-sm checkbox-warning border-black"
@@ -101,11 +101,11 @@ const Steganograph: FC = () => {
                     setFileOrText((prev) => !prev);
                   }}
                 />
-              </div>
+              </div> */}
             </div>
             {!fileOrText ? (
               <textarea
-                className="textarea textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10"
+                className="textarea textarea-warning text-base w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10"
                 placeholder="Enter your secret text here"
                 onChange={handleData}
               ></textarea>
@@ -199,6 +199,35 @@ const Steganograph: FC = () => {
               >
                 SUBMIT
               </button>
+              <dialog id="my_modalstg_2" className="modal">
+                <form method="dialog" className="modal-box">
+                  <h3 className="font-bold text-lg">
+                    Steganography Successful.
+                  </h3>
+
+                  <button
+                    className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+                    onClick={() => {
+                      const ffilePath = stgFilePath.split("\\");
+                      const fileName = ffilePath.pop();
+                      // const fp =
+                      //   ffilePath.join("\\") + "\\" + fileName + ".enc";
+                      // console.log(fp);
+                      invoke("showinfolder", {
+                        fileName: fileName,
+                      }).then((message) => {
+                        console.log(message);
+                        // window.my_modalstg_2.showModal();
+                      });
+                    }}
+                  >
+                    Show in folder
+                  </button>
+                </form>
+                <form method="dialog" className="modal-backdrop">
+                  <button>close</button>
+                </form>
+              </dialog>
             </div>
           </div>
         </div>
