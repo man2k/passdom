@@ -4,10 +4,8 @@
 use aes::Aes128;
 use aes::Aes192;
 use aes::Aes256;
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Argon2,
-};
+use argon2::Argon2;
+use chrono::Utc;
 
 use block_modes::block_padding::Pkcs7;
 use block_modes::{BlockMode, Cbc};
@@ -38,59 +36,140 @@ type Aes192Cbc = Cbc<Aes192, Pkcs7>;
 //     type_name::<T>()
 // }
 
-pub fn passargon() {
-    let password = b"hunter42"; // Bad password; don't actually use!
-                                // let salt = b"example"; // Salt should be unique per password
-
-    let mut salt = [0u8; 16];
+fn passargon(password: String, size: usize) -> Result<([u8; 16], Vec<u8>), &'static str> {
+    let mut salt: [u8; 16] = [0u8; 16];
     let mut rng = rand::thread_rng();
     rng.fill(&mut salt);
-
-    let mut output_key_material = [0u8; 16]; // Can be any desired size
-    let _ = Argon2::default().hash_password_into(password, &salt, &mut output_key_material);
-    // let s = String::from_utf8(output_key_material.to_vec()).expect("Found invalid UTF-8");
-    // println!("{}", s);
-    // Ok(())
-    println!("{:x?}", output_key_material);
+    let mut output_key_material = vec![0u8; size]; // Can be any desired size
+    let _ =
+        Argon2::default().hash_password_into(password.as_bytes(), &salt, &mut output_key_material);
+    Ok((salt, output_key_material))
+}
+fn keygenargon(password: String, size: usize, salt: [u8; 16]) -> Result<Vec<u8>, &'static str> {
+    // let mut salt: [u8; 16] = [0u8; 16];
+    // let mut salty= salt;
+    let mut output_key_material = vec![0u8; size]; // Can be any desired size
+    let _ =
+        Argon2::default().hash_password_into(password.as_bytes(), &salt, &mut output_key_material);
+    Ok(output_key_material)
 }
 
 #[tauri::command]
-async fn steganograph(file_path: String, data: String) -> String {
-    passargon();
+async fn steganograph(
+    img_path: String,
+    data: String,
+    password: String,
+    file_path: String,
+) -> String {
+    let (iv, key) = passargon(password, 32).unwrap();
+    println!("IV : {:?}", iv); // IV
+    println!("Key : {:?}", key); // passhash\key
+
+    let dt = Utc::now();
+    let timestamp: i64 = dt.timestamp();
+
+    // println!("Current timestamp is {}", timestamp);
+    let downloads = dirs::download_dir().expect("Could not find downloads directory");
+    let finalpath = downloads.join(format!("steg-{}.png", timestamp));
+    // let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
+    // fil.write_all(&finalchipher)
+    //     .expect("Error Saving Encrypted File");
+
     // let message = "This is a steganography demo!".to_string();
     //Convert our string to bytes
-    let payload = str_to_bytes(&data);
-    //Load the image where we want to embed our secret message
-    // let destination_image = file_as_dynamic_image(
-    //     r"M:\pROGRAMMING fILES\DedSec\passdomtauri\passdomNative\src-tauri\src\icon.png"
+    if file_path == "" {
+        println!("No file");
+        let plaintext = data.as_bytes();
+        let pos = plaintext.len();
+        let mut buffer: Vec<u8> = vec![0u8; pos + 100];
+        buffer[..pos].copy_from_slice(&plaintext);
+        let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
+        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let finalchipher = [ciphertext, &iv].concat();
+        // println!("{:?}", finalchipher);
+
+        // let payload = str_to_bytes(&data);
+        let payload = &finalchipher;
+
+        let destination_image = file_as_dynamic_image(img_path);
+        //Create an encoder
+        let enc = Encoder::new(payload, destination_image);
+        //Encode our message into the alpha channel of the image
+        let result = enc.encode_alpha();
+        //Save the new image
+        // save_image_buffer(
+        //     result,
+        //     r"M:\pROGRAMMING fILES\DedSec\passdomtauri\passdomNative\src\assets\hidden_message.png"
+        //         .to_string(),
+        // );
+        save_image_buffer(result, finalpath.to_str().unwrap().to_string());
+    } else if file_path != "" {
+        println!("with file");
+
+        let path = Path::new(&file_path);
+        let display = path.display();
+        let mut file = match File::open(&path) {
+            Err(why) => panic!("couldn't open {}: {}", display, why),
+            Ok(file) => file,
+        };
+        let mut contents = Vec::new();
+        let _ = file.read_to_end(&mut contents);
+        let pos = contents.len();
+        println!("pos {}", pos);
+        let mut buffer: Vec<u8> = vec![0u8; pos + 100];
+        buffer[..pos].copy_from_slice(&contents);
+        let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
+        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let finalchipher = [ciphertext, &iv].concat();
+        // println!("finalchipher : {:?}", finalchipher);
+
+        // let payload = str_to_bytes(&data);
+        let payload = &finalchipher;
+
+        let destination_image = file_as_dynamic_image(img_path);
+        //Create an encoder
+        let enc = Encoder::new(payload, destination_image);
+        //Encode our message into the alpha channel of the image
+        let result = enc.encode_alpha();
+        //Save the new image
+        save_image_buffer(
+            result,
+            r"M:\pROGRAMMING fILES\DedSec\passdomtauri\passdomNative\src\assets\hidden_message.png"
+                .to_string(),
+        );
+    }
+
+    // DECODER
+    // let encoded_image = file_as_image_buffer(
+    //     r"M:\pROGRAMMING fILES\DedSec\passdomtauri\passdomNative\src\assets\hidden_message.png"
     //         .to_string(),
     // );
-    let destination_image = file_as_dynamic_image(file_path);
-    //Create an encoder
-    let enc = Encoder::new(payload, destination_image);
-    //Encode our message into the alpha channel of the image
-    let result = enc.encode_alpha();
-    //Save the new image
-    save_image_buffer(
-        result,
-        r"M:\pROGRAMMING fILES\DedSec\passdomtauri\passdomNative\src\assets\hidden_message.png"
-            .to_string(),
-    );
 
-    let encoded_image = file_as_image_buffer(
-        r"M:\pROGRAMMING fILES\DedSec\passdomtauri\passdomNative\src\assets\hidden_message.png"
-            .to_string(),
-    );
-    //Create a decoder
-    let dec = Decoder::new(encoded_image);
-    //Decode the image by reading the alpha channel
-    let out_buffer = dec.decode_alpha();
-    //If there is no alpha, it's set to 255 by default so we filter those out
-    let clean_buffer: Vec<u8> = out_buffer.into_iter().filter(|b| *b != 0xff_u8).collect();
+    // //Create a decoder
+    // let dec = Decoder::new(encoded_image);
+    // //Decode the image by reading the alpha channel
+    // let out_buffer = dec.decode_alpha();
+    // //If there is no alpha, it's set to 255 by default so we filter those out
+    // let clean_buffer: Vec<u8> = out_buffer.into_iter().filter(|b| *b != 0xff_u8).collect();
+    // println!("clean_buffer : {:?}", clean_buffer);
+
+    // // DECRYPTION
+    // let plaintext2 = clean_buffer;
+    // // let plaintext2 = hex::decode(text).expect("Decoding failed");
+    // println!("plain : {:?}", plaintext2);
+    // let (content, ivv) = plaintext2.split_at(plaintext2.len() - 16);
+    // println!("content : {:?}", content);
+    // // let fkey = hex::decode(key).expect("Decoding failed");
+    // let mut buf = content.to_vec();
+    // let cipher = Aes128Cbc::new_from_slices(&key, &ivv).unwrap();
+    // let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+    // let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
+    // println!("Dec : {:?}", s);
+
     //Convert those bytes into a string we can read
-    let message = bytes_to_str(clean_buffer.as_slice());
+    // let message = bytes_to_str(clean_buffer.as_slice());
     //Print it out!
-    println!("{:?}", message);
+    // println!("{:?}", message);
 
     "done".to_string()
 }
@@ -99,7 +178,7 @@ async fn steganograph(file_path: String, data: String) -> String {
 async fn decryptfile(
     file_path: String,
     file_name: String,
-    key: String,
+    password: String,
     algo: usize,
 ) -> Result<String, String> {
     println!("path: {}", file_path);
@@ -113,7 +192,9 @@ async fn decryptfile(
     let _ = file.read_to_end(&mut contents);
 
     let (content, iv) = contents.split_at(contents.len() - 16);
-    let fkey = hex::decode(key).expect("Decoding failed");
+
+    // let fkey = hex::decode(key).expect("Decoding failed");
+    let fkey = keygenargon(password, algo / 8, iv.try_into().unwrap()).unwrap();
     let mut buf = content.to_vec();
 
     println!("IV: {}", encode(&iv));
@@ -166,7 +247,12 @@ async fn showinfolder(file_name: String) -> Result<String, ()> {
 }
 
 #[tauri::command]
-async fn encryptfile(file_path: String, file_name: String, algo: usize) -> Result<String, ()> {
+async fn encryptfile(
+    file_path: String,
+    file_name: String,
+    password: String,
+    algo: usize,
+) -> Result<String, ()> {
     println!("path: {}", file_path);
     println!("algo: {}", algo);
     let path = Path::new(&file_path);
@@ -181,11 +267,14 @@ async fn encryptfile(file_path: String, file_name: String, algo: usize) -> Resul
     println!("pos {}", pos);
     let mut buffer: Vec<u8> = vec![0u8; pos + 100];
     buffer[..pos].copy_from_slice(&contents);
+
+    let (iv, key) = passargon(password, algo / 8).unwrap();
+    println!("iv : {:?} \nkey : {:?}", iv, key);
     if algo == 128 {
-        let iv = rand::thread_rng().gen::<[u8; 16]>();
-        let key = rand::thread_rng().gen::<[u8; 16]>();
-        println!("Key: {}", encode(key));
-        println!("IV: {}", encode(iv));
+        // let iv = rand::thread_rng().gen::<[u8; 16]>();
+        // let key = rand::thread_rng().gen::<[u8; 16]>();
+        // println!("Key: {}", encode(&key));
+        // println!("IV: {}", encode(&iv));
         let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
         let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
         let finalchipher = [ciphertext, &iv].concat();
@@ -196,10 +285,10 @@ async fn encryptfile(file_path: String, file_name: String, algo: usize) -> Resul
             .expect("Error Saving Encrypted File");
         Ok(encode(key).into())
     } else if algo == 192 {
-        let iv = rand::thread_rng().gen::<[u8; 16]>();
-        let key = rand::thread_rng().gen::<[u8; 24]>();
-        println!("Key: {}", encode(key));
-        println!("IV: {}", encode(iv));
+        // let iv = rand::thread_rng().gen::<[u8; 16]>();
+        // let key = rand::thread_rng().gen::<[u8; 24]>();
+        // println!("Key: {}", encode(key));
+        // println!("IV: {}", encode(iv));
         let cipher = Aes192Cbc::new_from_slices(&key, &iv).unwrap();
         let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
         let finalchipher = [ciphertext, &iv].concat();
@@ -210,10 +299,10 @@ async fn encryptfile(file_path: String, file_name: String, algo: usize) -> Resul
             .expect("Error Saving Encrypted File");
         Ok(encode(key).into())
     } else if algo == 256 {
-        let iv = rand::thread_rng().gen::<[u8; 16]>();
-        let key = rand::thread_rng().gen::<[u8; 32]>();
-        println!("Key: {}", encode(key));
-        println!("IV: {}", encode(iv));
+        // let iv = rand::thread_rng().gen::<[u8; 16]>();
+        // let key = rand::thread_rng().gen::<[u8; 32]>();
+        // println!("Key: {}", encode(key));
+        // println!("IV: {}", encode(iv));
         let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
         let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
         let finalchipher = [ciphertext, &iv].concat();

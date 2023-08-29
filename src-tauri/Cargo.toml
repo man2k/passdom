@@ -27,6 +27,7 @@ rand = "0.8.5"
 dirs = "4.0.0"
 steganography = "*"
 argon2 = "0.5.1"
+chrono = "0.4.27"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import steg from "../assets/steg.png";
 import { TypeAnimation } from "react-type-animation";
 import { useState } from "react";
@@ -12,6 +12,11 @@ const Steganograph: FC = () => {
   const [imgPath, setImgPath] = useState<string>("");
   const [data, setData] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+
+  useEffect(() => {
+    setFilePath("");
+    setData("");
+  }, [fileOrText]);
 
   const handleData = (e) => {
     setData(e.target.value);
@@ -55,8 +60,10 @@ const Steganograph: FC = () => {
 
   const handleSubmit = async () => {
     invoke("steganograph", {
-      filePath: imgPath,
+      imgPath: imgPath,
       data: data,
+      password: "password",
+      filePath: filePath,
     })
       .then((message) => {
         // setKey(message);
@@ -98,8 +105,8 @@ const Steganograph: FC = () => {
             </div>
             {!fileOrText ? (
               <textarea
-                className="textarea textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-10"
-                placeholder="Type your secret text here"
+                className="textarea textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10"
+                placeholder="Enter your secret text here"
                 onChange={handleData}
               ></textarea>
             ) : (
@@ -114,8 +121,8 @@ const Steganograph: FC = () => {
             )}
             <div className="flex justify-center">
               <input
-                className="input input-bordered textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-10 p-2"
-                placeholder="Type your password here"
+                className="input input-bordered textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10 p-2 px-4"
+                placeholder="Enter your password here"
                 type={isShown ? "text" : "password"}
                 onChange={handlePassword}
               />
