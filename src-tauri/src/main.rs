@@ -154,7 +154,6 @@ async fn desteganograph(
     let dec = Decoder::new(encoded_image);
     let out_buffer = dec.decode_alpha();
     let clean_buffer: Vec<u8> = out_buffer.into_iter().filter(|b| *b != 0xff_u8).collect();
-    // println!("clean_buffer : {:?}", clean_buffer);
 
     // DECRYPTION
     let plaintext2 = clean_buffer;
