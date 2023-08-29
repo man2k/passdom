@@ -9,6 +9,7 @@ This template should help get you started developing with Tauri, React and Types
 ## Screenshots
 
 ![alt text](https://i.ibb.co/tDGNS9w/a.jpg)
+![alt text]([https://i.ibb.co/tDGNS9w/a.jpg](https://i.ibb.co/QX9Gfry/showcase.gif))
 
 ## Test and Build commands
 ### BUILD (To build installer):
