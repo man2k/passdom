@@ -8,7 +8,7 @@ import Decode from "./pages/Decode";
 const App: FC = () => {
   return (
     <div
-      data-theme="dracula"
+      data-theme="luxury"
       className="min-w-full min-h-screen whitespace-nowrap overflow-hidden"
     >
       <div className="flex justify-center items-center w-full">

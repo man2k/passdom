@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { FC, ReactNode } from "react";
 import decryption from "../assets/decryption.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
@@ -6,7 +6,7 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { message, open } from "@tauri-apps/api/dialog";
 
-const Encrypt: ReactNode = () => {
+const Encrypt: FC = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
   const [text, setText] = useState<string>();
   const [chiphertext, setChiphertext] = useState<string>("");
@@ -103,7 +103,7 @@ const Encrypt: ReactNode = () => {
               ></textarea>
             ) : (
               <button
-                className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden"
+                className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden text-black"
                 onClick={handleFileChange}
               >
                 {filePath != ""

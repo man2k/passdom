@@ -25,7 +25,8 @@ block-modes="0.8.1"
 hex-literal="0.3.3"
 rand = "0.8.5"
 dirs = "4.0.0"
-
+steganography = "*"
+argon2 = "0.5.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
