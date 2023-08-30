@@ -1,6 +1,6 @@
 # PASSDOM
 
-Passdom is the successor of the previous enc-dec project. Native app for various encryption and decryption and data conceilment needs. Enhanced with more capabilities and better efficiency due to the use of rust for the backend. No need to connect with a server anymore.
+Passdom is the successor of the previous enc-dec project. Native app for various encryption and decryption and data conceilment needs. Enhanced with more capabilities and better efficiency due to the use of rust for the backend. No need to connect with a server anymore. 
 
 ## Screenshots
 
