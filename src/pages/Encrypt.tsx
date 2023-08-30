@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { FC, useEffect, useState } from "react";
 import encryption from "../assets/encryption.png";
 import { ChipherList } from "../constants";

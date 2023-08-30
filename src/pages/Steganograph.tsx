@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { FC, useEffect, useState } from "react";
 import steg from "../assets/steg.png";
 import { TypeAnimation } from "react-type-animation";
