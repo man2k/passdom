@@ -1,7 +1,7 @@
 import { navLinks } from "../constants";
 import { Link } from "react-router-dom";
 import { FC } from "react";
-import logo from "/Black logo - no background.png";
+import logo from "/blacklogo.png";
 
 const Navbar: FC = () => {
   return (
