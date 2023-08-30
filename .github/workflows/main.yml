@@ -27,9 +27,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y webkit2gtk-4.0
-      - name: Install pnpm
-        run: |
-          sudo apt-get install -y pnpm
+      - uses: pnpm/action-setup@v2
+      with:
+        version: 8
       - name: install app dependencies and build it
         run: pnpm && pnpm build
       - uses: tauri-apps/tauri-action@v0
