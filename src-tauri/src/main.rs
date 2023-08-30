@@ -18,7 +18,7 @@ use std::path::Path;
 use steganography::decoder::*;
 use steganography::encoder::*;
 use steganography::util::*;
-use tauri::api::file;
+// use tauri::api::file;
 
 use dirs;
 use std::process::Command;
@@ -47,8 +47,6 @@ fn passargon(password: String, size: usize) -> Result<([u8; 16], Vec<u8>), &'sta
     Ok((salt, output_key_material))
 }
 fn keygenargon(password: String, size: usize, salt: [u8; 16]) -> Result<Vec<u8>, &'static str> {
-    // let mut salt: [u8; 16] = [0u8; 16];
-    // let mut salty= salt;
     let mut output_key_material = vec![0u8; size]; // Can be any desired size
     let _ =
         Argon2::default().hash_password_into(password.as_bytes(), &salt, &mut output_key_material);

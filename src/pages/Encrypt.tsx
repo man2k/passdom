@@ -23,7 +23,6 @@ const Encrypt: FC = () => {
     setFilePath("");
     setText("");
   }, [textOrFile]);
-  
 
   // const convertWordArrayToUint8Array = async (wordArray) => {
   //   var arrayOfWords = wordArray.hasOwnProperty("words") ? wordArray.words : [];
@@ -241,8 +240,14 @@ const Encrypt: FC = () => {
               onChange={(e) => {
                 handleAlgoChange(e);
               }}
+              defaultValue="Select your algorithm!"
             >
-              <option disabled selected className="lowercase text-black">
+              <option
+                key="default"
+                disabled
+                // selected
+                className="lowercase text-black"
+              >
                 Select your algorithm!
               </option>
               {ChipherList.map((item) => (
@@ -359,8 +364,8 @@ const Encrypt: FC = () => {
               <dialog id="my_modalenc_4" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">Encryption Successful!</h3>
-                  <p className="py-4 flex-col">
-                    Your Key:
+                  <div className="py-4 flex-col">
+                    {/* Your Key:
                     <input
                       type="text"
                       value={key}
@@ -377,7 +382,7 @@ const Encrypt: FC = () => {
                         }
                       }}
                     />
-                    <br />
+                    <br /> */}
                     Encrypted Text:
                     <input
                       type="text"
@@ -400,7 +405,7 @@ const Encrypt: FC = () => {
                         click to copy
                       </span>
                     </div>
-                  </p>
+                  </div>
                 </form>
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>

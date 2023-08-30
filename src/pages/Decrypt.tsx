@@ -181,8 +181,9 @@ const Encrypt: FC = () => {
               onChange={(e) => {
                 handleAlgoChange(e);
               }}
+              defaultValue="Select your algorithm!"
             >
-              <option disabled selected className="lowercase">
+              <option disabled key="default" className="lowercase">
                 Select your algorithm!
               </option>
               {ChipherList.map((item) => (

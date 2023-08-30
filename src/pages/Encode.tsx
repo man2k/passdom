@@ -2,7 +2,7 @@ import CardC from "../components/CardC";
 import { FC } from "react";
 import Img from "../components/Img";
 import TextBox from "../components/TextBox";
-import encdec from "../assets/encdec.png";
+import encdec from "../../public/encode.png";
 // import { dirname } from "path";
 
 // import * as path from "path";

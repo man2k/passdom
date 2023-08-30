@@ -9,7 +9,7 @@ const Home: FC = () => {
     <div className="w-full h-full flex flex-col justify-center">
       <div className=" w-full justify-center">
         <div className="flex justify-center pb-2">
-          <h1 className="card text-8xl flex flex-row font-extralight font-mono">
+          <div className="card text-8xl flex flex-row font-extralight font-mono">
             <TypeAnimation
               sequence={[
                 ".ENCRYPT.",
@@ -32,15 +32,17 @@ const Home: FC = () => {
               wrapper="h1"
               cursor={false}
             />
-          </h1>
+          </div>
         </div>
       </div>
       <div className="flex justify-center my-10">
         <div className="flex flex-wrap justify-center gap-12">
           {navLinks.map((item) => (
-            <Link to={`/${item.id}`}>
-              <Card title={item.title} />
-            </Link>
+            <div key={item.title}>
+              <Link to={`/${item.id}`}>
+                <Card title={item.title} />
+              </Link>
+            </div>
           ))}
         </div>
       </div>
