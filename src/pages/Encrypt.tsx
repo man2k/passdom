@@ -23,10 +23,7 @@ const Encrypt: FC = () => {
     setFilePath("");
     setText("");
   }, [textOrFile]);
-  // useEffect(() => {
-  //   setFilePath("");
-  //   setText("");
-  // }, []);
+  
 
   // const convertWordArrayToUint8Array = async (wordArray) => {
   //   var arrayOfWords = wordArray.hasOwnProperty("words") ? wordArray.words : [];
