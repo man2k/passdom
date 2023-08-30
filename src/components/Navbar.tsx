@@ -5,7 +5,7 @@ import logo from "/Black logo - no background.png";
 
 const Navbar: FC = () => {
   return (
-    <nav className="w-full flex justify-center fixed z-10">
+    <nav className="w-full flex justify-center fixed z-10 mt-1">
       <div className="left-0 absolute">
         <Link to="/">
           <img src={logo} alt="logo" className="w-14 h-14 rounded-full p-2" />

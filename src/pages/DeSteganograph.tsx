@@ -1,7 +1,5 @@
-// @ts-nocheck
-
-import { FC, useEffect, useState } from "react";
-import unsteg from "../assets/unsteg.png";
+import React, { FC, useEffect, useState } from "react";
+import unsteg from "/desteganograph.png";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open, save } from "@tauri-apps/api/dialog";
@@ -36,21 +34,22 @@ const DeSteganograph: FC = () => {
     invoke("desteganograph", {
       imgPath: imgPath,
       password: password,
-      fileortext: fileOrText,
-      finalpath: savePath,
+      _fileortext: fileOrText,
+      _finalpath: savePath,
     })
       .then((message) => {
         // setStegFilePath(message);
+        //@ts-ignore
         window.my_modaldes_2.showModal();
         if (!fileOrText) {
-          setData(message);
+          setData(message as string);
           console.log(message);
         }
       })
       .catch((error) => console.error(error));
   };
 
-  const handlePassword = (e) => {
+  const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   };
   const handleImgChange = async () => {
@@ -68,7 +67,7 @@ const DeSteganograph: FC = () => {
     } else {
       // user selected a single file
       // console.log(selected);
-      setImgPath(selected);
+      setImgPath(selected as string);
     }
   };
   return (
@@ -182,12 +181,13 @@ const DeSteganograph: FC = () => {
                   <span
                     className="textarea textarea-accent w-full text-white bg-slate-800 font-mono cursor-pointer ml-4"
                     onClick={(e) => {
-                      if (e.target.innerText !== "") {
+                      if ((e.target as HTMLSpanElement).innerText !== "") {
                         navigator.clipboard.writeText(data);
-                        let tmp = e.target.innerText;
-                        e.target.innerText = "copied to clipboard..";
+                        let tmp = (e.target as HTMLSpanElement).innerText;
+                        (e.target as HTMLSpanElement).innerText =
+                          "copied to clipboard..";
                         setTimeout(() => {
-                          e.target.innerText = data;
+                          (e.target as HTMLSpanElement).innerText = data;
                         }, 900);
                       }
                     }}

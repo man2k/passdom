@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import { FC, useEffect, useState } from "react";
-import encryption from "../assets/encryption.png";
+import encryption from "/encrypt.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
@@ -14,7 +12,6 @@ const Encrypt: FC = () => {
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
   const [text, setText] = useState<string>();
   const [chiphertext, setChiphertext] = useState<string>("");
-  // const [key, setKey] = useState<string>("");
   const [filePath, setFilePath] = useState<string>("");
   const [algo, setAlgo] = useState<number>(0);
   const [password, setPassword] = useState<string>("");
@@ -43,12 +40,23 @@ const Encrypt: FC = () => {
   //   return uInt8Array;
   // };
 
-  const handlePassword = (e) => {
+  const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   };
 
-  const handleTextchange = (e) => {
+  const handleTextchange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
+  };
+
+  const handleCopy = (e: React.MouseEvent<HTMLInputElement>) => {
+    if ((e.target as HTMLInputElement).value !== "") {
+      navigator.clipboard.writeText(chiphertext);
+      // let tmp = e.target.innerText;
+      (e.target as HTMLInputElement).value = "copied to clipboard..";
+      setTimeout(() => {
+        (e.target as HTMLInputElement).value = chiphertext;
+      }, 900);
+    }
   };
 
   const encryptFile = async () => {
@@ -81,54 +89,45 @@ const Encrypt: FC = () => {
     if (textOrFile === false) {
       invoke("encryptfile", {
         filePath: filePath,
-        fileName: filePath.split("\\").pop() + ".enc",
+        fileName: filePath?.split("\\").pop() + ".enc",
         password: password,
         algo: algo,
       })
-        .then((message) => {
-          // setKey(message);
+        .then(() => {
+          // @ts-ignore
           window.my_modalenc_2.showModal();
         })
         .catch((error) => console.error(error));
     } else if (textOrFile === true) {
       invoke("encrypttext", {
         textStr: text,
+        password: password,
         algo: algo,
       })
         .then((message) => {
           console.log(message);
-          setKey(message[1]);
-          setChiphertext(message[0]);
+          setChiphertext(message as string);
+          // @ts-ignore
           window.my_modalenc_4.showModal();
         })
         .catch((error) => console.error(error));
     }
   };
 
-  const handleFileChange = async (e) => {
-    // setFile(e?.target?.files[0]);
+  const handleFileChange = async (e: React.MouseEvent<HTMLButtonElement>) => {
     const selected = await open({
       multiple: false,
-      // filters: [
-      //   {
-      //     name: "Image",
-      //     extensions: ["png", "jpeg"],
-      //   },
-      // ],
     });
-    // console.log(selected?.toString());
-    // if (Array.isArray(selected)) {
-    // user selected multiple files
-    // } else
+
     if (selected === null) {
       // user cancelled the selection
     } else {
       // user selected a single file
-      setFilePath(selected);
+      setFilePath(selected as string);
     }
   };
 
-  const handleAlgoChange = (e) => {
+  const handleAlgoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e.target.value === "aes-128-cbc") {
       setAlgo(128);
     } else if (e.target.value === "aes-192-cbc") {
@@ -242,12 +241,7 @@ const Encrypt: FC = () => {
               }}
               defaultValue="Select your algorithm!"
             >
-              <option
-                key="default"
-                disabled
-                // selected
-                className="lowercase text-black"
-              >
+              <option key="default" disabled className="lowercase text-black">
                 Select your algorithm!
               </option>
               {ChipherList.map((item) => (
@@ -259,15 +253,7 @@ const Encrypt: FC = () => {
               <button
                 className="btn bg-slate-400 hover:bg-teal-500 w-full h-full rounded-lg text-black mt-0.5 shadow-lg shadow-gray-800"
                 // disabled={algo != 0 && filePath != "" ? false : true}
-                onClick={async () => {
-                  // if (
-                  //   (algo != 128 || algo != 192 || algo != 256) &&
-                  //   (filePath == "" || text != "")
-                  // ) {
-                  //   window.my_modalenc_3.showModal();
-                  // }
-                  await encryptFile();
-                }}
+                onClick={encryptFile}
               >
                 Encrypt
               </button>
@@ -389,16 +375,7 @@ const Encrypt: FC = () => {
                       value={chiphertext}
                       readOnly
                       className="input input-bordered input-accent w-full max-w-xs ml-1 mt-2 shadow-lg shadow-violet-700 border-0 bg-slate-800 cursor-pointer"
-                      onClick={(e) => {
-                        if (e.target.value !== "") {
-                          navigator.clipboard.writeText(chiphertext);
-                          // let tmp = e.target.innerText;
-                          e.target.value = "copied to clipboard..";
-                          setTimeout(() => {
-                            e.target.value = chiphertext;
-                          }, 900);
-                        }
-                      }}
+                      onClick={handleCopy}
                     />
                     <div className="mt-5 ml-14">
                       <span className="text-xs italic ml-72 shadow-lg border-2 text-white border-gray-500 rounded-full p-1 cursor-default">

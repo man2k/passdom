@@ -1,13 +1,11 @@
-// @ts-nocheck
-
 import { FC, useEffect, useState } from "react";
-import decryption from "../assets/decryption.png";
+import decryption from "/decrypt.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
 
-const Encrypt: FC = () => {
+const Decrypt: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
   const [text, setText] = useState<string>();
@@ -21,12 +19,7 @@ const Encrypt: FC = () => {
     setText("");
   }, [textOrFile]);
 
-  // useEffect(() => {
-  //   setFilePath("");
-  //   setText("");
-  // }, []);
-
-  const handleAlgoChange = (e) => {
+  const handleAlgoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e.target.value === "aes-128-cbc") {
       setAlgo(128);
     } else if (e.target.value === "aes-192-cbc") {
@@ -36,6 +29,7 @@ const Encrypt: FC = () => {
     }
   };
   const decryptFile = async () => {
+    //@ts-ignore
     const fileName = filePath.split("\\").pop().replace(".enc", "");
     if (textOrFile === false) {
       invoke("decryptfile", {
@@ -45,6 +39,7 @@ const Encrypt: FC = () => {
         algo: algo,
       }).then((message) => {
         console.log(message);
+        //@ts-ignore
         window.my_modaldec_2.showModal();
       });
     } else if (textOrFile === true) {
@@ -52,28 +47,41 @@ const Encrypt: FC = () => {
       console.log(password);
       invoke("decrypttext", {
         text: text,
-        key: password,
+        password: password,
         algo: algo,
       }).then((message) => {
         console.log(message);
-        setChiphertext(message);
+        setChiphertext(message as string);
+        //@ts-ignore
         window.my_modaldec_2.showModal();
       });
     }
   };
 
-  const handleTextchange = (e) => {
+  const handleTextchange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
+    console.log("where is th etxt", text);
   };
 
-  const handleFileChange = async (e) => {
+  const handleCopy = (e: React.MouseEvent<HTMLHeadingElement>) => {
+    if ((e.target as HTMLInputElement).innerText !== "") {
+      navigator.clipboard.writeText(chiphertext);
+      // let tmp = e.target.innerText;
+      (e.target as HTMLInputElement).innerText = "copied to clipboard..";
+      setTimeout(() => {
+        (e.target as HTMLInputElement).innerText = chiphertext;
+      }, 900);
+    }
+  };
+
+  const handleFileChange = async () => {
     const selected = await open({
       multiple: false,
     });
 
     if (selected === null) {
     } else {
-      setFilePath(selected);
+      setFilePath(selected as string);
     }
   };
   return (
@@ -109,7 +117,7 @@ const Encrypt: FC = () => {
             </div>
             {textOrFile ? (
               <textarea
-                className="textarea textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-10"
+                className="textarea textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-[15px]"
                 placeholder="Type here"
                 onChange={handleTextchange}
               ></textarea>
@@ -126,7 +134,7 @@ const Encrypt: FC = () => {
 
             <div className="flex flex-row">
               <input
-                type="password"
+                type={isShown ? "text" : "password"}
                 placeholder="Enter your password here"
                 className="input input-bordered textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 rounded-lg font-mono text-black h-10 p-2 mt-1 placeholder:text-slate-300"
                 onChange={(e) => {
@@ -193,10 +201,7 @@ const Encrypt: FC = () => {
             <div className="card-actions justify-end">
               <button
                 className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
-                onClick={async () => {
-                  await decryptFile();
-                  // window.my_modaldec_2.showModal();
-                }}
+                onClick={decryptFile}
               >
                 Decrypt
               </button>
@@ -207,25 +212,41 @@ const Encrypt: FC = () => {
                       ? "File Decrypted Successfully"
                       : "Here is your decrypted text :"}
                   </h3>
-                  <h3>{chiphertext}</h3>
-                  <button
-                    className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
-                    onClick={() => {
-                      const fileName = filePath
-                        ?.split("\\")
-                        .pop()
-                        .replace(".enc", "");
+                  {textOrFile ? (
+                    <h3
+                      className="bg-slate-700 hover:bg-slate-600 rounded-lg w-max px-2 py-1 mt-2 ml-3 cursor-pointer"
+                      onClick={handleCopy}
+                    >
+                      {chiphertext}
+                    </h3>
+                  ) : (
+                    <></>
+                  )}
+                  {!textOrFile ? (
+                    <button
+                      className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+                      onClick={() => {
+                        //@ts-ignore
+                        const fileName = filePath
+                          .split("\\")
+                          .pop()
+                          .replace(".enc", "");
+                        console.log(fileName);
 
-                      invoke("showinfolder", {
-                        filePath: fileName,
-                      }).then((message) => {
-                        console.log(message);
-                        window.my_modaldec_2.showModal();
-                      });
-                    }}
-                  >
-                    Show in folder
-                  </button>
+                        invoke("showinfolder", {
+                          fileName: fileName,
+                        }).then((message) => {
+                          console.log(message);
+                          //@ts-ignore
+                          window.my_modaldec_2.showModal();
+                        });
+                      }}
+                    >
+                      Show in folder
+                    </button>
+                  ) : (
+                    <></>
+                  )}
                 </form>
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>
@@ -239,4 +260,4 @@ const Encrypt: FC = () => {
   );
 };
 
-export default Encrypt;
+export default Decrypt;

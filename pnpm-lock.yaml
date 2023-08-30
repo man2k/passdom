@@ -41,6 +41,9 @@ dependencies:
   react-type-animation:
     specifier: ^3.1.0
     version: 3.1.0(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
+  zwsp-steg:
+    specifier: ^1.0.1
+    version: 1.0.1
 
 devDependencies:
   '@tauri-apps/cli':
@@ -2503,3 +2506,7 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  /zwsp-steg@1.0.1:
+    resolution: {integrity: sha512-Y6cuykeXCPtx9sbY7d0i1PFFfp9xm50Z418x9dbg1VTnxha3b4mS6rTgaiP4cRiEtTA0khGde+xCUS006HyROg==}
+    dev: false

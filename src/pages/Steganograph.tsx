@@ -1,7 +1,5 @@
-// @ts-nocheck
-
 import { FC, useEffect, useState } from "react";
-import steg from "../assets/steg.png";
+import steg from "/steganograph.png";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
@@ -20,11 +18,11 @@ const Steganograph: FC = () => {
     setData("");
   }, []);
 
-  const handleData = (e) => {
+  const handleData = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setData(e.target.value);
   };
 
-  const handlePassword = (e) => {
+  const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   };
 
@@ -43,7 +41,7 @@ const Steganograph: FC = () => {
     } else {
       // user selected a single file
       // console.log(selected);
-      setImgPath(selected);
+      setImgPath(selected as string);
     }
   };
 
@@ -56,7 +54,7 @@ const Steganograph: FC = () => {
       // user cancelled the selection
     } else {
       // user selected a single file
-      setFilePath(selected);
+      setFilePath(selected as string);
     }
   };
 
@@ -68,7 +66,8 @@ const Steganograph: FC = () => {
       filePath: filePath,
     })
       .then((message) => {
-        setStegFilePath(message);
+        setStegFilePath(message as string);
+        //@ts-ignore
         window.my_modalstg_2.showModal();
         // console.log(message);
       })
