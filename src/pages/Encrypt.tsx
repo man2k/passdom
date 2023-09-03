@@ -4,6 +4,8 @@ import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // import CryptoJS from "crypto-js";
 // import fileDownload from "js-file-download";
 
@@ -16,29 +18,76 @@ const Encrypt: FC = () => {
   const [algo, setAlgo] = useState<number>(0);
   const [password, setPassword] = useState<string>("");
 
+  const successMsgFile = () => (
+    <div>
+      <form method="" className="">
+        <h3 className="">File Encryption Successfull!</h3>
+        <button
+          className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+          onClick={() => {
+            const ffilePath = filePath.split("\\");
+            const fileName = ffilePath.pop() + ".enc";
+            // const fp =
+            //   ffilePath.join("\\") + "\\" + fileName + ".enc";
+            // console.log(fp);
+            invoke("showinfolder", {
+              fileName: fileName,
+            }).then((message) => {
+              console.log(message);
+              // window.my_modalenc_2.showModal();
+            });
+          }}
+        >
+          Show in folder
+        </button>
+      </form>
+    </div>
+  );
+
+  const progressToast = (msg: string | FC) => {
+    // console.log("Toast");
+    toast.info(msg, {
+      position: "bottom-left",
+      autoClose: 2000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const errorToast = (e) => {
+    // console.log("Toast");
+    toast.warn(e, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const completedToastFile = () => {
+    // console.log("Toast");
+    toast.success(successMsgFile, {
+      position: "bottom-left",
+      autoClose: 15000,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+
   useEffect(() => {
     setFilePath("");
     setText("");
   }, [textOrFile]);
-
-  // const convertWordArrayToUint8Array = async (wordArray) => {
-  //   var arrayOfWords = wordArray.hasOwnProperty("words") ? wordArray.words : [];
-  //   var length = wordArray.hasOwnProperty("sigBytes")
-  //     ? wordArray.sigBytes
-  //     : arrayOfWords.length * 4;
-  //   var uInt8Array = new Uint8Array(length),
-  //     index = 0,
-  //     word,
-  //     i;
-  //   for (i = 0; i < length; i++) {
-  //     word = arrayOfWords[i];
-  //     uInt8Array[index++] = word >> 24;
-  //     uInt8Array[index++] = (word >> 16) & 0xff;
-  //     uInt8Array[index++] = (word >> 8) & 0xff;
-  //     uInt8Array[index++] = word & 0xff;
-  //   }
-  //   return uInt8Array;
-  // };
 
   const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -60,33 +109,10 @@ const Encrypt: FC = () => {
   };
 
   const encryptFile = async () => {
-    // const f = file;
-    // const buf = await f?.arrayBuffer();
-    // console.log(buf);
-    // const iv = window.crypto.getRandomValues(new Uint8Array(16));
-    // const key = window.crypto.getRandomValues(new Uint8Array(24));
-    // console.log(key.toString());
-    // const wordArray = CryptoJS.lib.WordArray.create(buf);
-    // console.log(wordArray);
-    // let encrypted = CryptoJS.AES.encrypt(wordArray, key.toString(), {
-    // iv: iv,
-    //   mode: CryptoJS.mode.CBC,
-    //   padding: CryptoJS.pad.Pkcs7,
-    // });
-    // console.log(encrypted);
-    // let fileEnc = new Blob([encrypted]);
-    // fileDownload(fileEnc, "");
-    // let decrypted = CryptoJS.AES.decrypt(encrypted, key.toString());
-    // console.log(decrypted);
-    // let dec = await convertWordArrayToUint8Array(decrypted);
-    // console.log(dec);
-    // let fileDec = new Blob([dec]);
-    // console.log(fileDec);
-    // fileDownload(fileDec, "");
-    // console.log(algo);
-    // console.log(typeof algo);
-
-    if (textOrFile === false) {
+    if ((filePath == "" && text == "") || password == "" || algo == 0) {
+      errorToast("Some inputs are missing");
+    } else if (textOrFile === false) {
+      progressToast("Encryption in progress");
       invoke("encryptfile", {
         filePath: filePath,
         fileName: filePath?.split("\\").pop() + ".enc",
@@ -94,23 +120,45 @@ const Encrypt: FC = () => {
         algo: algo,
       })
         .then(() => {
+          completedToastFile();
           // @ts-ignore
-          window.my_modalenc_2.showModal();
+          // window.my_modalenc_2.showModal();
         })
-        .catch((error) => console.error(error));
+        .catch((message) => {
+          if (message == "encryption failed") {
+            errorToast(
+              <div>
+                <h4 className="text-sm">Encryption has failed</h4>
+              </div>
+            );
+          } else {
+            console.log(message);
+          }
+        });
     } else if (textOrFile === true) {
+      progressToast("Encryption in progress");
       invoke("encrypttext", {
         textStr: text,
         password: password,
         algo: algo,
       })
         .then((message) => {
-          console.log(message);
+          // console.log(message);
           setChiphertext(message as string);
           // @ts-ignore
           window.my_modalenc_4.showModal();
         })
-        .catch((error) => console.error(error));
+        .catch((message) => {
+          if (message == "encryption failed") {
+            errorToast(
+              <div>
+                <h4 className="text-sm">Encryption has failed</h4>
+              </div>
+            );
+          } else {
+            console.log(message);
+          }
+        });
     }
   };
 
@@ -257,60 +305,11 @@ const Encrypt: FC = () => {
               >
                 Encrypt
               </button>
-              <dialog id="my_modalenc_2" className="modal">
+              {/* <dialog id="my_modalenc_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">
                     File Encrypted Successfully.
                   </h3>
-                  {/* <p className="py-4 overflow-hidden">
-                    Your Key: <br />
-                    <textarea
-                      className="textarea textarea-accent w-full text-white bg-slate-800 font-mono cursor-pointer"
-                      readOnly
-                      value={key}
-                      onClick={(e) => {
-                        if (e.target.value !== "") {
-                          navigator.clipboard.writeText(e.target.value);
-                          e.target.value = "copied to clipboard..";
-                          setTimeout(() => {
-                            e.target.value = key;
-                          }, 900);
-                        }
-                      }}
-                    /> */}
-                  {/* {key} */}
-                  {/* </textarea> */}
-                  {/* <span
-                      className=""
-                      onClick={(e) => {
-                        if (e.target.innerText !== "") {
-                          navigator.clipboard.writeText(e.target.innerText);
-                          e.target.innerText = "copied to clipboard..";
-                          setTimeout(() => {
-                            e.target.innerText = key;
-                          }, 900);
-                        }
-                      }}
-                    >
-                      <p className="cursor-pointer flex break-words">{key}</p>
-                    </span> */}
-                  {/* <br />
-                    <span
-                      className="text-xs italic ml-72 shadow-lg border-2 text-white border-gray-500 rounded-full p-1 cursor-pointer"
-                      onClick={(e) => {
-                        if (e.target.innerText !== "") {
-                          navigator.clipboard.writeText(key);
-                          // let tmp = e.target.innerText;
-                          e.target.innerText = "copied to clipboard..";
-                          setTimeout(() => {
-                            e.target.innerText = "click to copy";
-                          }, 900);
-                        }
-                      }}
-                    >
-                      click to copy
-                    </span>
-                  </p> */}
                   <button
                     className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
                     onClick={() => {
@@ -333,8 +332,8 @@ const Encrypt: FC = () => {
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>
                 </form>
-              </dialog>
-              <dialog id="my_modalenc_3" className="modal">
+              </dialog> */}
+              {/* <dialog id="my_modalenc_3" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">Wait!</h3>
                   <p className="py-4">
@@ -346,29 +345,11 @@ const Encrypt: FC = () => {
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>
                 </form>
-              </dialog>
+              </dialog> */}
               <dialog id="my_modalenc_4" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">Encryption Successful!</h3>
                   <div className="py-4 flex-col">
-                    {/* Your Key:
-                    <input
-                      type="text"
-                      value={key}
-                      readOnly
-                      className="input input-bordered input-primary w-80 ml-14 shadow-lg shadow-violet-700 border-0 bg-slate-800 cursor-pointer"
-                      onClick={(e) => {
-                        if (e.target.value !== "") {
-                          navigator.clipboard.writeText(key);
-                          // let tmp = e.target.innerText;
-                          e.target.value = "copied to clipboard..";
-                          setTimeout(() => {
-                            e.target.value = key;
-                          }, 900);
-                        }
-                      }}
-                    />
-                    <br /> */}
                     Encrypted Text:
                     <input
                       type="text"

@@ -4,8 +4,10 @@
 use aes::Aes128;
 use aes::Aes192;
 use aes::Aes256;
+// use anyhow::Result;
 use argon2::Argon2;
 use chrono::Utc;
+use std::panic;
 
 use block_modes::block_padding::Pkcs7;
 use block_modes::{BlockMode, Cbc};
@@ -43,13 +45,13 @@ fn keygenargon(password: String, size: usize, salt: [u8; 16]) -> Result<Vec<u8>,
     Ok(output_key_material)
 }
 
-#[tauri::command]
-async fn steganograph(
+#[tauri::command(async)]
+fn steganograph(
     img_path: String,
     data: String,
     password: String,
     file_path: String,
-) -> String {
+) -> Result<String, String> {
     let (iv, key) = passargon(password, 32).unwrap();
     println!("IV : {:?}", iv); // IV
     println!("Key : {:?}", key); // passhash\key
@@ -66,13 +68,16 @@ async fn steganograph(
 
     // let message = "This is a steganography demo!".to_string();
     if file_path == "" {
-        println!("No file");
+        // println!("No file");
         let plaintext = data.as_bytes();
         let pos = plaintext.len();
         let mut buffer: Vec<u8> = vec![0u8; pos + 100];
         buffer[..pos].copy_from_slice(&plaintext);
         let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
-        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let ciphertext = match cipher.encrypt(&mut buffer, pos) {
+            Err(e) => return Err("Encryption Failed".to_string()),
+            Ok(e) => e,
+        };
         let finalchipher = [ciphertext, &iv].concat();
         // println!("{:?}", finalchipher);
 
@@ -84,14 +89,14 @@ async fn steganograph(
         let result = enc.encode_alpha();
 
         save_image_buffer(result, finalpath.to_str().unwrap().to_string());
-        return finalpath.to_str().unwrap().to_string();
+        return Ok(finalpath.to_str().unwrap().to_string());
     } else if file_path != "" {
         println!("with file");
 
         let path = Path::new(&file_path);
-        let display = path.display();
+        // let display = path.display();
         let mut file = match File::open(&path) {
-            Err(why) => panic!("couldn't open {}: {}", display, why),
+            Err(_) => return Err("couldnt open file".to_string()),
             Ok(file) => file,
         };
         let mut contents = Vec::new();
@@ -115,19 +120,19 @@ async fn steganograph(
         let result = enc.encode_alpha();
         //Save the new image
         save_image_buffer(result, finalpath.to_str().unwrap().to_string());
-        return finalpath.to_str().unwrap().to_string();
+        return Ok(finalpath.to_str().unwrap().to_string());
     }
 
-    "done".to_string()
+    Ok("done".to_string())
 }
 
-#[tauri::command]
-async fn desteganograph(
+#[tauri::command(async)]
+fn desteganograph(
     img_path: String,
     password: String,
     _fileortext: bool,
     _finalpath: String,
-) -> String {
+) -> Result<String, String> {
     // if !fileortext {
     let encoded_image = file_as_image_buffer(img_path);
 
@@ -138,14 +143,23 @@ async fn desteganograph(
 
     // DECRYPTION
     let plaintext2 = clean_buffer;
-    let (content, ivv) = plaintext2.split_at(plaintext2.len() - 16);
+    let (content, ivv) = match panic::catch_unwind(|| plaintext2.split_at(plaintext2.len() - 16)) {
+        Err(e) => {
+            return Err("invalid image".to_string());
+        }
+        Ok((content, ivv)) => (content, ivv),
+    };
+
     let mut buffer = content.to_vec();
     let fkey = keygenargon(password, 32, ivv.try_into().unwrap()).unwrap();
     let cipher = Aes256Cbc::new_from_slices(&fkey, &ivv).unwrap();
-    let decrypted_ciphertext = cipher.decrypt(&mut buffer).unwrap();
+    let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
+        Err(e) => return Err("decryption failed".to_string()),
+        Ok(e) => e,
+    };
     let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
     println!("Dec : {}", s);
-    return s.to_string();
+    return Ok(s.to_string());
     // }
     // } else {
     //     let encoded_image = file_as_image_buffer(img_path);
@@ -188,19 +202,19 @@ async fn showinfolder(file_name: String) -> Result<String, ()> {
     Ok(format!("Done"))
 }
 
-#[tauri::command]
-async fn encryptfile(
+#[tauri::command(async)]
+fn encryptfile(
     file_path: String,
     file_name: String,
     password: String,
     algo: usize,
-) -> Result<String, ()> {
+) -> Result<String, String> {
     println!("path: {}", file_path);
     println!("algo: {}", algo);
     let path = Path::new(&file_path);
     let display = path.display();
     let mut file = match File::open(&path) {
-        Err(why) => panic!("couldn't open {}: {}", display, why),
+        Err(_) => return Err("couldnt open file".to_string()),
         Ok(file) => file,
     };
     let mut contents = Vec::new();
@@ -214,7 +228,10 @@ async fn encryptfile(
     println!("iv : {:?} \nkey : {:?}", iv, key);
     if algo == 128 {
         let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
-        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let ciphertext = match cipher.encrypt(&mut buffer, pos) {
+            Err(_) => return Err("encryption failed".to_string()),
+            Ok(cipt) => cipt,
+        };
         let finalchipher = [ciphertext, &iv].concat();
         let downloads = dirs::download_dir().expect("Could not find downloads directory");
         let finalpath = downloads.join(file_name);
@@ -223,7 +240,10 @@ async fn encryptfile(
             .expect("Error Saving Encrypted File");
     } else if algo == 192 {
         let cipher = Aes192Cbc::new_from_slices(&key, &iv).unwrap();
-        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let ciphertext = match cipher.encrypt(&mut buffer, pos) {
+            Err(_) => return Err("encryption failed".to_string()),
+            Ok(cipt) => cipt,
+        };
         let finalchipher = [ciphertext, &iv].concat();
         let downloads = dirs::download_dir().expect("Could not find downloads directory");
         let finalpath = downloads.join(file_name);
@@ -232,7 +252,10 @@ async fn encryptfile(
             .expect("Error Saving Encrypted File");
     } else if algo == 256 {
         let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
-        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let ciphertext = match cipher.encrypt(&mut buffer, pos) {
+            Err(_) => return Err("encryption failed".to_string()),
+            Ok(cipt) => cipt,
+        };
         let finalchipher = [ciphertext, &iv].concat();
         let downloads = dirs::download_dir().expect("Could not find downloads directory");
         let finalpath = downloads.join(file_name);
@@ -251,8 +274,8 @@ async fn encryptfile(
     // println!("\nCiphertext: {:?}", ciphertext);
 }
 
-#[tauri::command]
-async fn encrypttext(text_str: String, password: String, algo: usize) -> Result<String, ()> {
+#[tauri::command(async)]
+fn encrypttext(text_str: String, password: String, algo: usize) -> Result<String, String> {
     println!("encrypt text working...");
     let plaintext = text_str.as_bytes();
     let pos = plaintext.len();
@@ -268,7 +291,10 @@ async fn encrypttext(text_str: String, password: String, algo: usize) -> Result<
         // println!("iv : {}", encode(&iv));
         let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
 
-        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let ciphertext = match cipher.encrypt(&mut buffer, pos) {
+            Err(_) => return Err("encryption failed".to_string()),
+            Ok(cipt) => cipt,
+        };
         let finalchipher = [ciphertext, &iv].concat();
         println!("finalchipher : {:?}", finalchipher);
         Ok(encode(finalchipher).into())
@@ -278,7 +304,10 @@ async fn encrypttext(text_str: String, password: String, algo: usize) -> Result<
         // println!("key : {}", encode(&key));
         // println!("iv : {}", encode(&iv));
         let cipher = Aes192Cbc::new_from_slices(&key, &iv).unwrap();
-        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let ciphertext = match cipher.encrypt(&mut buffer, pos) {
+            Err(_) => return Err("encryption failed".to_string()),
+            Ok(cipt) => cipt,
+        };
         let finalchipher = [ciphertext, &iv].concat();
         println!("finalchipher : {:?}", finalchipher);
         Ok(encode(finalchipher).into())
@@ -288,7 +317,10 @@ async fn encrypttext(text_str: String, password: String, algo: usize) -> Result<
         // println!("key : {}", encode(&key));
         // println!("iv : {}", encode(&iv));
         let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
-        let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
+        let ciphertext = match cipher.encrypt(&mut buffer, pos) {
+            Err(_) => return Err("encryption failed".to_string()),
+            Ok(cipt) => cipt,
+        };
         let finalchipher = [ciphertext, &iv].concat();
         println!("finalchipher : {:?}", finalchipher);
 
@@ -298,8 +330,8 @@ async fn encrypttext(text_str: String, password: String, algo: usize) -> Result<
     }
 }
 
-#[tauri::command]
-async fn decryptfile(
+#[tauri::command(async)]
+fn decryptfile(
     file_path: String,
     file_name: String,
     password: String,
@@ -307,9 +339,9 @@ async fn decryptfile(
 ) -> Result<String, String> {
     println!("path: {}", file_path);
     let path = Path::new(&file_path);
-    let display = path.display();
+    // let display = path.display();
     let mut file = match File::open(&path) {
-        Err(why) => panic!("couldn't open {}: {}", display, why),
+        Err(_) => return Err("couldn't open file".to_string()),
         Ok(file) => file,
     };
     let mut contents = Vec::new();
@@ -326,40 +358,53 @@ async fn decryptfile(
 
     if algo == 128 {
         let cipher = Aes128Cbc::new_from_slices(&fkey, &iv).unwrap();
-        let decrypted_ciphertext = cipher.decrypt(&mut buffer).unwrap();
+        // let decrypted_ciphertext = cipher.decrypt(&mut buffer)?;
+        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
+            Err(_) => return Err("decryption failed".to_string()),
+            Ok(decrypted_ciphertext) => decrypted_ciphertext,
+        };
         let downloads = dirs::download_dir().expect("Could not find downloads directory");
         let finalpath = downloads.join(file_name);
         let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
         fil.write_all(&decrypted_ciphertext)
             .expect("Error Saving Encrypted File");
-        Ok("This worked!".into())
+        Ok("ok".to_string())
     } else if algo == 192 {
         let cipher = Aes192Cbc::new_from_slices(&fkey, &iv).unwrap();
-        let decrypted_ciphertext = cipher.decrypt(&mut buffer).unwrap();
+        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
+            Err(_) => return Err("decryption failed".to_string()),
+            Ok(decrypted_ciphertext) => decrypted_ciphertext,
+        };
         let downloads = dirs::download_dir().expect("Could not find downloads directory");
         let finalpath = downloads.join(file_name);
         let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
         fil.write_all(&decrypted_ciphertext)
             .expect("Error Saving Encrypted File");
-        Ok("This worked!".into())
+        Ok("ok".to_string())
     } else if algo == 256 {
         let cipher = Aes256Cbc::new_from_slices(&fkey, &iv).unwrap();
-        let decrypted_ciphertext = cipher.decrypt(&mut buffer).unwrap();
+        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
+            Err(_) => return Err("decryption failed".to_string()),
+            Ok(decrypted_ciphertext) => decrypted_ciphertext,
+        };
         let downloads = dirs::download_dir().expect("Could not find downloads directory");
         let finalpath = downloads.join(file_name);
         let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
         fil.write_all(&decrypted_ciphertext)
             .expect("Error Saving Encrypted File");
-        Ok("This worked!".into())
+        Ok("ok".to_string())
     } else {
-        Ok("Failed".into())
+        Ok("Some Error has occured".to_string())
     }
 }
 
-#[tauri::command]
-async fn decrypttext(text: String, password: String, algo: usize) -> Result<String, ()> {
+#[tauri::command(async)]
+fn decrypttext(text: String, password: String, algo: usize) -> Result<String, String> {
     // let plaintext = text.as_bytes();
-    let plaintext = hex::decode(text).expect("Decoding failed");
+    let plaintext = match hex::decode(text) {
+        Err(_) => return Err("format error".to_string()),
+        Ok(e) => e,
+    };
     println!("plain : {:?}", plaintext);
     let (content, iv) = plaintext.split_at(plaintext.len() - 16);
     println!("content : {:?}", content);
@@ -372,17 +417,26 @@ async fn decrypttext(text: String, password: String, algo: usize) -> Result<Stri
     println!("iv : {}", encode(&iv));
     if algo == 128 {
         let cipher = Aes128Cbc::new_from_slices(&fkey, &iv).unwrap();
-        let decrypted_ciphertext = cipher.decrypt(&mut buffer).unwrap();
+        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
+            Err(_) => return Err("decryption failed".to_string()),
+            Ok(decrypted_ciphertext) => decrypted_ciphertext,
+        };
         let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
         Ok(s.to_string())
     } else if algo == 192 {
         let cipher = Aes192Cbc::new_from_slices(&fkey, &iv).unwrap();
-        let decrypted_ciphertext = cipher.decrypt(&mut buffer).unwrap();
+        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
+            Err(_) => return Err("decryption failed".to_string()),
+            Ok(decrypted_ciphertext) => decrypted_ciphertext,
+        };
         let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
         Ok(s.to_string())
     } else if algo == 256 {
         let cipher = Aes256Cbc::new_from_slices(&fkey, &iv).unwrap();
-        let decrypted_ciphertext = cipher.decrypt(&mut buffer).unwrap();
+        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
+            Err(_) => return Err("decryption failed".to_string()),
+            Ok(decrypted_ciphertext) => decrypted_ciphertext,
+        };
         let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
         Ok(s.to_string())
     } else {

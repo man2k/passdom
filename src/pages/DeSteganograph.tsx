@@ -3,6 +3,8 @@ import unsteg from "/desteganograph.png";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open, save } from "@tauri-apps/api/dialog";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const DeSteganograph: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
@@ -11,6 +13,46 @@ const DeSteganograph: FC = () => {
   const [data, setData] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [savePath, setSavePath] = useState<string | null>("");
+
+  const progressToast = (msg: string | FC) => {
+    // console.log("Toast");
+    toast.info(msg, {
+      position: "bottom-left",
+      autoClose: 2000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const errorToast = (e) => {
+    // console.log("Toast");
+    toast.warn(e, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const completedToastFile = () => {
+    // console.log("Toast");
+    toast.success(successMsgFile, {
+      position: "bottom-left",
+      autoClose: 15000,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
 
   useEffect(() => {
     setImgPath("");
@@ -31,11 +73,12 @@ const DeSteganograph: FC = () => {
       });
       setSavePath(filePath);
     }
+    progressToast("Desteganograph in progress");
     invoke("desteganograph", {
       imgPath: imgPath,
       password: password,
-      _fileortext: fileOrText,
-      _finalpath: savePath,
+      fileortext: fileOrText,
+      finalpath: savePath,
     })
       .then((message) => {
         // setStegFilePath(message);
@@ -46,7 +89,18 @@ const DeSteganograph: FC = () => {
           console.log(message);
         }
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        if (error == "invalid image") {
+          errorToast(
+            <div>
+              <h4 className="text-sm">Invalid image chosen.</h4>
+              <h5 className="text-xs">
+                Chosen image doesn't contain any secret.
+              </h5>
+            </div>
+          );
+        }
+      });
   };
 
   const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {

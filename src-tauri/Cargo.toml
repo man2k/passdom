@@ -1,10 +1,10 @@
 [package]
-name = "passdom_native"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+name = "Passdom"
+version = "0.1.0"
+description = "Secure Your Data"
+authors = ["man2k"]
 license = ""
-repository = ""
+repository = "https://github.com/man2k/passdomNative"
 edition = "2021"
 
 [env]
@@ -28,6 +28,8 @@ dirs = "4.0.0"
 steganography = "*"
 argon2 = "0.5.1"
 chrono = "0.4.27"
+anyhow = "1.0.75"
+thiserror = "1.0.48"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

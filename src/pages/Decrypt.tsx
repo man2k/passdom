@@ -3,7 +3,9 @@ import decryption from "/decrypt.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
-import { open } from "@tauri-apps/api/dialog";
+import { message, open } from "@tauri-apps/api/dialog";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Decrypt: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
@@ -13,6 +15,77 @@ const Decrypt: FC = () => {
   const [password, setPassword] = useState<string>("");
   const [filePath, setFilePath] = useState<string>("");
   const [algo, setAlgo] = useState<number>(0);
+
+  const successMsgFile = () => (
+    <div>
+      <form>
+        <h3 className="italic">File Decryption Successful</h3>
+
+        {!textOrFile ? (
+          <button
+            className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+            onClick={() => {
+              //@ts-ignore
+              const fileName = filePath.split("\\").pop().replace(".enc", "");
+              console.log(fileName);
+
+              invoke("showinfolder", {
+                fileName: fileName,
+              }).then((message) => {
+                console.log(message);
+                //@ts-ignore
+                window.my_modaldec_2.showModal();
+              });
+            }}
+          >
+            Show in folder
+          </button>
+        ) : (
+          <></>
+        )}
+      </form>
+    </div>
+  );
+
+  const progressToast = (msg: string | FC) => {
+    // console.log("Toast");
+    toast.info(msg, {
+      position: "bottom-left",
+      autoClose: 2000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const errorToast = (e) => {
+    // console.log("Toast");
+    toast.warn(e, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const completedToastFile = () => {
+    // console.log("Toast");
+    toast.success(successMsgFile, {
+      position: "bottom-left",
+      autoClose: 15000,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
 
   useEffect(() => {
     setFilePath("");
@@ -31,17 +104,42 @@ const Decrypt: FC = () => {
   const decryptFile = async () => {
     //@ts-ignore
     const fileName = filePath.split("\\").pop().replace(".enc", "");
-    if (textOrFile === false) {
+    if ((filePath == "" && text == "") || password == "" || algo == 0) {
+      errorToast("Some inputs are missing");
+    } else if (textOrFile === false) {
+      progressToast("Decryption in progress");
       invoke("decryptfile", {
         filePath: filePath,
         fileName: fileName,
         password: password,
         algo: algo,
-      }).then((message) => {
-        console.log(message);
-        //@ts-ignore
-        window.my_modaldec_2.showModal();
-      });
+      })
+        .then((message) => {
+          console.log(message);
+          completedToastFile();
+          //@ts-ignore
+          // window.my_modaldec_2.showModal();
+        })
+        .catch((message) => {
+          if (message == "decryption failed") {
+            errorToast(
+              <div>
+                <h4 className="text-sm">Decryption has failed</h4>
+                <h5 className="text-xs">
+                  Check your password and type and try again
+                </h5>
+              </div>
+            );
+          } else if (message === "couldn't open file") {
+            <div>
+              <h4 className="text-sm">
+                Couldn't open or file the file selected
+              </h4>
+            </div>;
+          } else {
+            console.log(message);
+          }
+        });
     } else if (textOrFile === true) {
       console.log(text);
       console.log(password);
@@ -49,18 +147,44 @@ const Decrypt: FC = () => {
         text: text,
         password: password,
         algo: algo,
-      }).then((message) => {
-        console.log(message);
-        setChiphertext(message as string);
-        //@ts-ignore
-        window.my_modaldec_2.showModal();
-      });
+      })
+        .then((message) => {
+          console.log(message);
+          setChiphertext(message as string);
+          completedToastFile();
+          //@ts-ignore
+          window.my_modaldec_2.showModal();
+        })
+        .catch((message) => {
+          console.log(message);
+          if (message == "decryption failed") {
+            errorToast(
+              <div>
+                <h4 className="text-sm">Decryption has failed</h4>
+                <h5 className="text-xs">
+                  Check your password and type and try again
+                </h5>
+              </div>
+            );
+          } else if (message == "format error") {
+            errorToast(
+              <div>
+                <h4 className="text-sm">
+                  Invalid input. Not a valid encrypted text
+                </h4>
+                <h5 className="text-xs">Check your input and try again</h5>
+              </div>
+            );
+          } else {
+            console.log(message);
+          }
+        });
     }
   };
 
   const handleTextchange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
-    console.log("where is th etxt", text);
+    // console.log("where is the txt", text);
   };
 
   const handleCopy = (e: React.MouseEvent<HTMLHeadingElement>) => {
@@ -205,48 +329,18 @@ const Decrypt: FC = () => {
               >
                 Decrypt
               </button>
+
               <dialog id="my_modaldec_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">
-                    {textOrFile === false
-                      ? "File Decrypted Successfully"
-                      : "Here is your decrypted text :"}
+                    Here is your decrypted text :
                   </h3>
-                  {textOrFile ? (
-                    <h3
-                      className="bg-slate-700 hover:bg-slate-600 rounded-lg w-max px-2 py-1 mt-2 ml-3 cursor-pointer"
-                      onClick={handleCopy}
-                    >
-                      {chiphertext}
-                    </h3>
-                  ) : (
-                    <></>
-                  )}
-                  {!textOrFile ? (
-                    <button
-                      className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
-                      onClick={() => {
-                        //@ts-ignore
-                        const fileName = filePath
-                          .split("\\")
-                          .pop()
-                          .replace(".enc", "");
-                        console.log(fileName);
-
-                        invoke("showinfolder", {
-                          fileName: fileName,
-                        }).then((message) => {
-                          console.log(message);
-                          //@ts-ignore
-                          window.my_modaldec_2.showModal();
-                        });
-                      }}
-                    >
-                      Show in folder
-                    </button>
-                  ) : (
-                    <></>
-                  )}
+                  <h3
+                    className="bg-slate-700 hover:bg-slate-600 rounded-lg w-max px-2 py-1 mt-2 ml-3 cursor-pointer"
+                    onClick={handleCopy}
+                  >
+                    {chiphertext}
+                  </h3>
                 </form>
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>

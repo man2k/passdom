@@ -4,6 +4,8 @@ import { Home, Encrypt, Decrypt, Steganograph, DeSteganograph } from "./pages";
 import { FC } from "react";
 import Encode from "./pages/Encode";
 import Decode from "./pages/Decode";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App: FC = () => {
   return (
@@ -16,6 +18,18 @@ const App: FC = () => {
           <Navbar />
         </div>
       </div>
+      <ToastContainer
+        position="bottom-left"
+        autoClose={1000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       <div className="mt-16">
         <div>
           <Routes>
