@@ -25,6 +25,38 @@ export const navLinks = [
     },
 ]
 
+export const themes= [
+    "light",
+    "dark",
+    "luxury",
+    "dracula",
+    "retro",
+    "cyberpunk",
+    "valentine",
+    "halloween",
+    "garden",
+    "forest",
+    "black",
+    "business",
+    "night",
+    "coffee",
+    "aqua",
+    // "cupcake",
+    // "bumblebee",
+    // "emerald",
+    // "corporate",
+    // "synthwave",
+    // "lofi",
+    // "pastel",
+    // "fantasy",
+    // "wireframe",
+    // "cmyk",
+    // "autumn",
+    // "acid",
+    // "lemonade",
+    // "winter",
+  ];
+
 export const ChipherList = [
     {
       label: "aes-128-cbc",

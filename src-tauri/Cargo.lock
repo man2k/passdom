@@ -3,27 +3,6 @@
 version = 3
 
 [[package]]
-name = "Passdom"
-version = "0.1.0"
-dependencies = [
- "aes",
- "anyhow",
- "argon2",
- "block-modes",
- "chrono",
- "dirs",
- "hex",
- "hex-literal",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "steganography",
- "tauri",
- "tauri-build",
- "thiserror",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1985,6 +1964,25 @@ dependencies = [
  "redox_syscall 0.3.5",
  "smallvec",
  "windows-targets",
+]
+
+[[package]]
+name = "passdom"
+version = "0.1.0"
+dependencies = [
+ "aes",
+ "argon2",
+ "block-modes",
+ "chrono",
+ "dirs",
+ "hex",
+ "hex-literal",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "steganography",
+ "tauri",
+ "tauri-build",
 ]
 
 [[package]]

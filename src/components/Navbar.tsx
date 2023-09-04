@@ -2,8 +2,11 @@ import { navLinks } from "../constants";
 import { Link } from "react-router-dom";
 import { FC } from "react";
 import logo from "/blacklogo.png";
+interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
 
-const Navbar: FC = () => {
+const Navbar: FC<NavbarProps> = ({ children }: NavbarProps) => {
   return (
     <nav className="w-full flex justify-center fixed z-10 mt-1">
       <div className="left-0 absolute">
@@ -57,6 +60,7 @@ const Navbar: FC = () => {
           />
         </svg>
       </ul>
+      {children}
     </nav>
   );
 };

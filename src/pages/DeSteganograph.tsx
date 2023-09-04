@@ -13,12 +13,12 @@ const DeSteganograph: FC = () => {
   const [data, setData] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [savePath, setSavePath] = useState<string | null>("");
-  useEffect(() => {
-    setImgPath("");
-    setData("");
-    setPassword("");
-    setSavePath("");
-  }, [data]);
+  // useEffect(() => {
+  //   setImgPath("");
+  // setData("");
+  //   setPassword("");
+  //   setSavePath("");
+  // }, [data]);
   const successMsgFile = (message: string) => (
     <div>
       <form>
@@ -33,7 +33,7 @@ const DeSteganograph: FC = () => {
               let tmp = (e.target as HTMLSpanElement).innerText;
               (e.target as HTMLSpanElement).innerText = "copied to clipboard..";
               setTimeout(() => {
-                (e.target as HTMLSpanElement).innerText = data;
+                (e.target as HTMLSpanElement).innerText = message;
               }, 900);
             }
           }}

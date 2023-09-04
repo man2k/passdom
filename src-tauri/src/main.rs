@@ -75,7 +75,7 @@ fn steganograph(
         buffer[..pos].copy_from_slice(&plaintext);
         let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
         let ciphertext = match cipher.encrypt(&mut buffer, pos) {
-            Err(e) => return Err("encryption failed".to_string()),
+            Err(_e) => return Err("encryption failed".to_string()),
             Ok(e) => e,
         };
         let finalchipher = [ciphertext, &iv].concat();
@@ -144,7 +144,7 @@ fn desteganograph(
     // DECRYPTION
     let plaintext2 = clean_buffer;
     let (content, ivv) = match panic::catch_unwind(|| plaintext2.split_at(plaintext2.len() - 16)) {
-        Err(e) => {
+        Err(_e) => {
             return Err("invalid image".to_string());
         }
         Ok((content, ivv)) => (content, ivv),
@@ -154,7 +154,7 @@ fn desteganograph(
     let fkey = keygenargon(password, 32, ivv.try_into().unwrap()).unwrap();
     let cipher = Aes256Cbc::new_from_slices(&fkey, &ivv).unwrap();
     let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
-        Err(e) => return Err("decryption failed".to_string()),
+        Err(_e) => return Err("decryption failed".to_string()),
         Ok(e) => e,
     };
     let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
