@@ -1,8 +1,10 @@
-import { FC, useEffect, useState } from "react";
+import { FC, ReactElement, useEffect, useState } from "react";
 import steg from "/steganograph.png";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Steganograph: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
@@ -12,14 +14,86 @@ const Steganograph: FC = () => {
   const [imgPath, setImgPath] = useState<string>("");
   const [data, setData] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  // useEffect(() => {
+  //   setFilePath("");
+  //   setData("");
+  // }, []);
+  const successMsgFile = (stgFilePath: string) => (
+    <div>
+      <form>
+        <h3 className="italic">Steganography Successful!</h3>
+        <button
+          className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+          onClick={(e) => {
+            e.preventDefault();
+            // console.log(stgFilePath);
+            const ffilePath = stgFilePath.split("\\");
+            const fileName = ffilePath.pop();
+            // console.log(fileName);
+            // const fp =
+            //   ffilePath.join("\\") + "\\" + fileName + ".enc";
+            // console.log(fp);
+            invoke("showinfolder", {
+              fileName: fileName,
+              filePath: stgFilePath,
+            });
+            // .then((message) => {
+            // console.log(message);
+            // window.my_modalstg_2.showModal();
+            // });
+          }}
+        >
+          Show in folder
+        </button>
+      </form>
+    </div>
+  );
 
-  useEffect(() => {
-    setFilePath("");
-    setData("");
-  }, []);
+  const progressToast = (msg: string | ReactElement) => {
+    // console.log("Toast");
+    toast.info(msg, {
+      position: "bottom-left",
+      autoClose: 2000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const errorToast = (e: string | ReactElement) => {
+    // console.log("Toast");
+    toast.warn(e, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const completedToastFile = (message: string) => {
+    // console.log("Toast");
+    toast.success(successMsgFile(message), {
+      position: "bottom-left",
+      autoClose: 15000,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
 
   const handleData = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setData(e.target.value);
+  };
+  const handleStegPath = (message: string) => {
+    setStegFilePath(message as string);
   };
 
   const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,6 +133,7 @@ const Steganograph: FC = () => {
   };
 
   const handleSubmit = async () => {
+    progressToast("Steganograph in progress..");
     invoke("steganograph", {
       imgPath: imgPath,
       data: data,
@@ -66,12 +141,31 @@ const Steganograph: FC = () => {
       filePath: filePath,
     })
       .then((message) => {
-        setStegFilePath(message as string);
+        console.log(message);
+        handleStegPath(message as string);
         //@ts-ignore
-        window.my_modalstg_2.showModal();
+        // window.my_modalstg_2.showModal();
+        completedToastFile(message as string);
         // console.log(message);
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        if (error == "encryption failed") {
+          errorToast(
+            <div>
+              <h4 className="text-base">Invalid image chosen.</h4>
+              <h5 className="text-sm">
+                Chosen image doesn't contain any secret.
+              </h5>
+            </div>
+          );
+        } else {
+          errorToast(
+            <div>
+              <h4 className="text-base">{error}</h4>
+            </div>
+          );
+        }
+      });
   };
 
   return (
@@ -200,7 +294,7 @@ const Steganograph: FC = () => {
               >
                 SUBMIT
               </button>
-              <dialog id="my_modalstg_2" className="modal">
+              {/* <dialog id="my_modalstg_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">
                     Steganography Successful.
@@ -228,7 +322,7 @@ const Steganograph: FC = () => {
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>
                 </form>
-              </dialog>
+              </dialog> */}
             </div>
           </div>
         </div>

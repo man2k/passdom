@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, ReactElement, useEffect, useState } from "react";
 import decryption from "/decrypt.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
@@ -47,7 +47,7 @@ const Decrypt: FC = () => {
     </div>
   );
 
-  const progressToast = (msg: string | FC) => {
+  const progressToast = (msg: string | ReactElement) => {
     // console.log("Toast");
     toast.info(msg, {
       position: "bottom-left",
@@ -60,7 +60,7 @@ const Decrypt: FC = () => {
       theme: "dark",
     });
   };
-  const errorToast = (e) => {
+  const errorToast = (e: string | ReactElement) => {
     // console.log("Toast");
     toast.warn(e, {
       position: "bottom-right",

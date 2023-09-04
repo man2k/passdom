@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, ReactElement, useEffect, useState } from "react";
 import unsteg from "/desteganograph.png";
 import { TypeAnimation } from "react-type-animation";
 import { invoke } from "@tauri-apps/api/tauri";
@@ -13,8 +13,38 @@ const DeSteganograph: FC = () => {
   const [data, setData] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [savePath, setSavePath] = useState<string | null>("");
+  useEffect(() => {
+    setImgPath("");
+    setData("");
+    setPassword("");
+    setSavePath("");
+  }, [data]);
+  const successMsgFile = (message: string) => (
+    <div>
+      <form>
+        <h3 className="italic">De - Steganography Successful!</h3>
+        <br />
+        <h3 className="italic ml-2 mb-1">Text found:</h3>
+        <span
+          className="textarea textarea-accent w-full text-white bg-slate-800 font-mono cursor-pointer ml-4"
+          onClick={(e) => {
+            if ((e.target as HTMLSpanElement).innerText !== "") {
+              navigator.clipboard.writeText(data);
+              let tmp = (e.target as HTMLSpanElement).innerText;
+              (e.target as HTMLSpanElement).innerText = "copied to clipboard..";
+              setTimeout(() => {
+                (e.target as HTMLSpanElement).innerText = data;
+              }, 900);
+            }
+          }}
+        >
+          {message}
+        </span>
+      </form>
+    </div>
+  );
 
-  const progressToast = (msg: string | FC) => {
+  const progressToast = (msg: string | ReactElement) => {
     // console.log("Toast");
     toast.info(msg, {
       position: "bottom-left",
@@ -27,8 +57,7 @@ const DeSteganograph: FC = () => {
       theme: "dark",
     });
   };
-  const errorToast = (e) => {
-    // console.log("Toast");
+  const errorToast = (e: string | ReactElement) => {
     toast.warn(e, {
       position: "bottom-right",
       autoClose: 3000,
@@ -40,9 +69,8 @@ const DeSteganograph: FC = () => {
       theme: "dark",
     });
   };
-  const completedToastFile = () => {
-    // console.log("Toast");
-    toast.success(successMsgFile, {
+  const completedToastFile = (message: string) => {
+    toast.success(successMsgFile(message), {
       position: "bottom-left",
       autoClose: 15000,
       hideProgressBar: true,
@@ -54,25 +82,18 @@ const DeSteganograph: FC = () => {
     });
   };
 
-  useEffect(() => {
-    setImgPath("");
-    setData("");
-    setPassword("");
-    setSavePath("");
-  }, []);
-
   const handleSubmit = async () => {
-    if (fileOrText) {
-      const filePath = await save({
-        filters: [
-          {
-            name: "",
-            extensions: ["*"],
-          },
-        ],
-      });
-      setSavePath(filePath);
-    }
+    // if (fileOrText) {
+    //   const filePath = await save({
+    //     filters: [
+    //       {
+    //         name: "",
+    //         extensions: ["*"],
+    //       },
+    //     ],
+    //   });
+    //   setSavePath(filePath);
+    // }
     progressToast("Desteganograph in progress");
     invoke("desteganograph", {
       imgPath: imgPath,
@@ -81,22 +102,36 @@ const DeSteganograph: FC = () => {
       finalpath: savePath,
     })
       .then((message) => {
-        // setStegFilePath(message);
         //@ts-ignore
-        window.my_modaldes_2.showModal();
-        if (!fileOrText) {
-          setData(message as string);
-          console.log(message);
-        }
+        // window.my_modaldes_2.showModal();
+        // if (!fileOrText) {
+        handleData(message as string);
+        completedToastFile(message as string);
+        // console.log(message);
+        // }
       })
       .catch((error) => {
+        // console.log(error);
         if (error == "invalid image") {
           errorToast(
             <div>
-              <h4 className="text-sm">Invalid image chosen.</h4>
-              <h5 className="text-xs">
+              <h4 className="text-base">Invalid image chosen.</h4>
+              <h5 className="text-sm">
                 Chosen image doesn't contain any secret.
               </h5>
+            </div>
+          );
+        } else if (error == "decryption failed") {
+          errorToast(
+            <div>
+              <h4 className="text-base">Your password is invalid!</h4>
+              <h5 className="text-sm">Please recheck your password.</h5>
+            </div>
+          );
+        } else {
+          errorToast(
+            <div>
+              <h4 className="text-base">{error}</h4>
             </div>
           );
         }
@@ -105,6 +140,10 @@ const DeSteganograph: FC = () => {
 
   const handlePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+  };
+
+  const handleData = (e: string) => {
+    setData(e);
   };
   const handleImgChange = async () => {
     const selected = await open({
@@ -224,14 +263,13 @@ const DeSteganograph: FC = () => {
               >
                 SUBMIT
               </button>
-              <dialog id="my_modaldes_2" className="modal">
+              {/* <dialog id="my_modaldes_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg ml-2">
                     De - Steganography Successful!
                   </h3>
                   <br />
                   <h3 className="italic ml-2 mb-1">Text found:</h3>
-                  {/* <br /> */}
                   <span
                     className="textarea textarea-accent w-full text-white bg-slate-800 font-mono cursor-pointer ml-4"
                     onClick={(e) => {
@@ -249,7 +287,7 @@ const DeSteganograph: FC = () => {
                     {data}
                   </span>
 
-                  {/* <button
+                  <button
                     className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
                     onClick={() => {
                       const ffilePath = stgFilePath.split("\\");
@@ -266,12 +304,12 @@ const DeSteganograph: FC = () => {
                     }}
                   >
                     Show in folder
-                  </button> */}
+                  </button>
                 </form>
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>
                 </form>
-              </dialog>
+              </dialog> */}
             </div>
           </div>
         </div>

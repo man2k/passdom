@@ -1,19 +1,50 @@
-import { FC, useEffect, useState } from "react";
+import { FC, ReactElement, useEffect, useState } from "react";
 import encdec from "/encode.png";
 import { TypeAnimation } from "react-type-animation";
 //@ts-ignore
 import ZwspSteg from "zwsp-steg";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Encode: FC = () => {
   const [data, setData] = useState<string>("");
   const [salt, setSalt] = useState<string>("");
   const [encodedText, setEncodedText] = useState<string>("");
 
-  useEffect(() => {
-    setData("");
-    setSalt("");
-  }, []);
+  // useEffect(() => {
+  //   setData("");
+  //   setSalt("");
+  // }, [encodedText]);
 
+  const successMsgFile = (message: string) => (
+    <div>
+      <form>
+        <h3 className="italic">Encoding Successful!</h3>
+
+        <button
+          className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+          onClick={(e) => {
+            handleCopy(e, message);
+          }}
+        >
+          click to copy
+        </button>
+      </form>
+    </div>
+  );
+  const completedToastFile = (message: string) => {
+    // console.log("Toast");
+    toast.success(successMsgFile(message), {
+      position: "bottom-left",
+      autoClose: 15000,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
   const handleData = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setData(e.target.value);
   };
@@ -22,21 +53,29 @@ const Encode: FC = () => {
     setSalt(e.target.value);
   };
 
-  const handleCopy = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCopy = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    message: string
+  ) => {
     e.preventDefault();
-    navigator.clipboard.writeText(encodedText);
+    navigator.clipboard.writeText(message);
     (e.target as HTMLInputElement).innerText = "copied to clipboard..";
     setTimeout(() => {
       (e.target as HTMLInputElement).innerText = "click to copy";
     }, 900);
   };
 
+  const handleEncodedText = (s: string) => {
+    setEncodedText(s);
+  };
+
   const handleEncode = async () => {
     let encoded = ZwspSteg.encode(data, ZwspSteg.MODE_FULL);
     let finalStr = salt + encoded;
-    setEncodedText(finalStr);
+    handleEncodedText(finalStr);
+    completedToastFile(finalStr);
     //@ts-ignore
-    window.my_modalenco_2.showModal();
+    // window.my_modalenco_2.showModal();
   };
 
   return (
@@ -90,7 +129,7 @@ const Encode: FC = () => {
               >
                 SUBMIT
               </button>
-              <dialog id="my_modalenco_2" className="modal">
+              {/* <dialog id="my_modalenco_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">Encoding Successful.</h3>
 
@@ -104,7 +143,7 @@ const Encode: FC = () => {
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>
                 </form>
-              </dialog>
+              </dialog> */}
             </div>
           </div>
         </div>

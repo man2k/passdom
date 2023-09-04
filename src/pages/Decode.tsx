@@ -1,35 +1,92 @@
-import { FC, useEffect, useState } from "react";
+import { FC, ReactElement, useEffect, useState } from "react";
 import encdec from "/decode.png";
 import { TypeAnimation } from "react-type-animation";
 //@ts-ignore
 import ZwspSteg from "zwsp-steg";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Decode: FC = () => {
   const [data, setData] = useState<string>("");
   const [decodedText, setDecodedText] = useState<string>("");
 
-  useEffect(() => {
-    setData("");
-  }, []);
+  // useEffect(() => {
+  //   setData("");
+  // }, [decodedText]);
 
+  const successMsgFile = (message: string) => (
+    <div>
+      <form>
+        <h3 className="italic">Decoding Successful!</h3>
+
+        <button
+          className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+          onClick={(e) => {
+            handleCopy(e, message);
+          }}
+        >
+          click to copy
+        </button>
+      </form>
+    </div>
+  );
+  const completedToastFile = (message: string) => {
+    // console.log("Toast");
+    toast.success(successMsgFile(message), {
+      position: "bottom-left",
+      autoClose: 15000,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+  const errorToast = (e: string | ReactElement) => {
+    // console.log("Toast");
+    toast.warn(e, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
   const handleData = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setData(e.target.value);
   };
 
-  const handleCopy = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCopy = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    message: string
+  ) => {
     e.preventDefault();
-    navigator.clipboard.writeText(decodedText);
-    (e.target as HTMLElement).innerText = "copied to clipboard..";
+    navigator.clipboard.writeText(message);
+    (e.target as HTMLInputElement).innerText = "copied to clipboard..";
     setTimeout(() => {
-      (e.target as HTMLElement).innerText = "click to copy";
+      (e.target as HTMLInputElement).innerText = "click to copy";
     }, 900);
+  };
+
+  const handleDecodedText = (message: string) => {
+    setDecodedText(message);
   };
 
   const handleDecode = async () => {
     let decoded = ZwspSteg.decode(data, ZwspSteg.MODE_FULL);
-    setDecodedText(decoded);
+    if (decoded != "") {
+      handleDecodedText(decoded);
+      completedToastFile(decoded);
+    } else {
+      errorToast("No encoded text found!");
+    }
+
     //@ts-ignore
-    window.my_modaldeco_2.showModal();
+    // window.my_modaldeco_2.showModal();
   };
 
   return (
@@ -74,7 +131,7 @@ const Decode: FC = () => {
               >
                 SUBMIT
               </button>
-              <dialog id="my_modaldeco_2" className="modal">
+              {/* <dialog id="my_modaldeco_2" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">Decoding Successful.</h3>
 
@@ -88,7 +145,7 @@ const Decode: FC = () => {
                 <form method="dialog" className="modal-backdrop">
                   <button>close</button>
                 </form>
-              </dialog>
+              </dialog> */}
             </div>
           </div>
         </div>

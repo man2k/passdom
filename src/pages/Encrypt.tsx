@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, ReactElement, useEffect, useState } from "react";
 import encryption from "/encrypt.png";
 import { ChipherList } from "../constants";
 import { TypeAnimation } from "react-type-animation";
@@ -20,8 +20,8 @@ const Encrypt: FC = () => {
 
   const successMsgFile = () => (
     <div>
-      <form method="" className="">
-        <h3 className="">File Encryption Successfull!</h3>
+      <form>
+        <h3 className="italic">File Encryption Successfull!</h3>
         <button
           className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
           onClick={() => {
@@ -44,7 +44,7 @@ const Encrypt: FC = () => {
     </div>
   );
 
-  const progressToast = (msg: string | FC) => {
+  const progressToast = (msg: string | ReactElement) => {
     // console.log("Toast");
     toast.info(msg, {
       position: "bottom-left",
@@ -57,7 +57,7 @@ const Encrypt: FC = () => {
       theme: "dark",
     });
   };
-  const errorToast = (e) => {
+  const errorToast = (e: string | ReactElement) => {
     // console.log("Toast");
     toast.warn(e, {
       position: "bottom-right",

@@ -75,7 +75,7 @@ fn steganograph(
         buffer[..pos].copy_from_slice(&plaintext);
         let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
         let ciphertext = match cipher.encrypt(&mut buffer, pos) {
-            Err(e) => return Err("Encryption Failed".to_string()),
+            Err(e) => return Err("encryption failed".to_string()),
             Ok(e) => e,
         };
         let finalchipher = [ciphertext, &iv].concat();
@@ -189,17 +189,25 @@ fn desteganograph(
 }
 
 #[tauri::command]
-async fn showinfolder(file_name: String) -> Result<String, ()> {
-    let downloads = dirs::download_dir().expect("Could not find downloads directory");
-    let finalpath = downloads.join(file_name);
-    let fp = finalpath.to_str().unwrap();
-
-    println!("save path: {}", fp);
-    Command::new("explorer")
-        .args(["/select,", fp])
-        .spawn()
-        .unwrap();
-    Ok(format!("Done"))
+async fn showinfolder(file_name: String, file_path: String) -> Result<String, ()> {
+    if file_path == "" {
+        let downloads = dirs::download_dir().expect("Could not find downloads directory");
+        let finalpath = downloads.join(file_name);
+        let fp = finalpath.to_str().unwrap();
+        println!("save path: {}", fp);
+        Command::new("explorer")
+            .args(["/select,", fp])
+            .spawn()
+            .unwrap();
+        Ok(format!("Done"))
+    } else {
+        println!("save path: {}", file_path);
+        Command::new("explorer")
+            .args(["/select,", file_path.as_str()])
+            .spawn()
+            .unwrap();
+        Ok(format!("Done"))
+    }
 }
 
 #[tauri::command(async)]
@@ -212,7 +220,7 @@ fn encryptfile(
     println!("path: {}", file_path);
     println!("algo: {}", algo);
     let path = Path::new(&file_path);
-    let display = path.display();
+    // let display = path.display();
     let mut file = match File::open(&path) {
         Err(_) => return Err("couldnt open file".to_string()),
         Ok(file) => file,
