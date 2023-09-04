@@ -1,8 +1,9 @@
 import { FC, ReactElement, useEffect, useState } from "react";
 import encdec from "/decode.png";
 import { TypeAnimation } from "react-type-animation";
-//@ts-ignore
+// // @ts-ignore
 import ZwspSteg from "zwsp-steg";
+// const ZwspSteg = require("zwsp-steg");
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -77,6 +78,10 @@ const Decode: FC = () => {
   };
 
   const handleDecode = async () => {
+    if (data === "") {
+      errorToast("The input is missing");
+      return;
+    }
     let decoded = ZwspSteg.decode(data, ZwspSteg.MODE_FULL);
     if (decoded != "") {
       handleDecodedText(decoded);
@@ -84,9 +89,6 @@ const Decode: FC = () => {
     } else {
       errorToast("No encoded text found!");
     }
-
-    //@ts-ignore
-    // window.my_modaldeco_2.showModal();
   };
 
   return (
@@ -131,21 +133,6 @@ const Decode: FC = () => {
               >
                 SUBMIT
               </button>
-              {/* <dialog id="my_modaldeco_2" className="modal">
-                <form method="dialog" className="modal-box">
-                  <h3 className="font-bold text-lg">Decoding Successful.</h3>
-
-                  <button
-                    className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
-                    onClick={handleCopy}
-                  >
-                    click to copy
-                  </button>
-                </form>
-                <form method="dialog" className="modal-backdrop">
-                  <button>close</button>
-                </form>
-              </dialog> */}
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { FC, ReactElement, useEffect, useState } from "react";
 import encdec from "/encode.png";
 import { TypeAnimation } from "react-type-animation";
-//@ts-ignore
+// //@ts-ignore
 import ZwspSteg from "zwsp-steg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -45,6 +45,21 @@ const Encode: FC = () => {
       theme: "dark",
     });
   };
+
+  const errorToast = (e: string | ReactElement) => {
+    // console.log("Toast");
+    toast.warn(e, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+
   const handleData = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setData(e.target.value);
   };
@@ -70,12 +85,14 @@ const Encode: FC = () => {
   };
 
   const handleEncode = async () => {
+    if (data === "" || salt === "") {
+      errorToast("Some inputs are missing");
+      return;
+    }
     let encoded = ZwspSteg.encode(data, ZwspSteg.MODE_FULL);
     let finalStr = salt + encoded;
     handleEncodedText(finalStr);
     completedToastFile(finalStr);
-    //@ts-ignore
-    // window.my_modalenco_2.showModal();
   };
 
   return (
@@ -129,21 +146,6 @@ const Encode: FC = () => {
               >
                 SUBMIT
               </button>
-              {/* <dialog id="my_modalenco_2" className="modal">
-                <form method="dialog" className="modal-box">
-                  <h3 className="font-bold text-lg">Encoding Successful.</h3>
-
-                  <button
-                    className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
-                    onClick={handleCopy}
-                  >
-                    click to copy
-                  </button>
-                </form>
-                <form method="dialog" className="modal-backdrop">
-                  <button>close</button>
-                </form>
-              </dialog> */}
             </div>
           </div>
         </div>

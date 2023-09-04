@@ -94,6 +94,10 @@ const DeSteganograph: FC = () => {
     //   });
     //   setSavePath(filePath);
     // }
+    if (imgPath === "" || password === "") {
+      errorToast("Some inputs are missing");
+      return;
+    }
     progressToast("Desteganograph in progress");
     invoke("desteganograph", {
       imgPath: imgPath,
@@ -102,7 +106,7 @@ const DeSteganograph: FC = () => {
       finalpath: savePath,
     })
       .then((message) => {
-        //@ts-ignore
+        // //@ts-ignore
         // window.my_modaldes_2.showModal();
         // if (!fileOrText) {
         handleData(message as string);

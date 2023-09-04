@@ -27,14 +27,14 @@ const Steganograph: FC = () => {
           onClick={(e) => {
             e.preventDefault();
             // console.log(stgFilePath);
-            const ffilePath = stgFilePath.split("\\");
-            const fileName = ffilePath.pop();
+            // const ffilePath = stgFilePath.split("\\");
+            // const fileName = ffilePath.pop();
             // console.log(fileName);
             // const fp =
             //   ffilePath.join("\\") + "\\" + fileName + ".enc";
             // console.log(fp);
             invoke("showinfolder", {
-              fileName: fileName,
+              fileName: "",
               filePath: stgFilePath,
             });
             // .then((message) => {
@@ -133,6 +133,10 @@ const Steganograph: FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (imgPath === "" || password === "" || data === "") {
+      errorToast("Some inputs are missing");
+      return;
+    }
     progressToast("Steganograph in progress..");
     invoke("steganograph", {
       imgPath: imgPath,
@@ -143,7 +147,7 @@ const Steganograph: FC = () => {
       .then((message) => {
         console.log(message);
         handleStegPath(message as string);
-        //@ts-ignore
+        // //@ts-ignore
         // window.my_modalstg_2.showModal();
         completedToastFile(message as string);
         // console.log(message);

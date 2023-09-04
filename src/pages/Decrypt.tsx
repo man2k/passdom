@@ -7,6 +7,12 @@ import { message, open } from "@tauri-apps/api/dialog";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+declare global {
+  interface Window {
+    my_modaldec_2: HTMLFormElement;
+  }
+}
+
 const Decrypt: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
@@ -16,7 +22,7 @@ const Decrypt: FC = () => {
   const [filePath, setFilePath] = useState<string>("");
   const [algo, setAlgo] = useState<number>(0);
 
-  const successMsgFile = () => (
+  const successMsgFile = (fp: string) => (
     <div>
       <form>
         <h3 className="italic">File Decryption Successful</h3>
@@ -24,18 +30,21 @@ const Decrypt: FC = () => {
         {!textOrFile ? (
           <button
             className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
-            onClick={() => {
-              //@ts-ignore
-              const fileName = filePath.split("\\").pop().replace(".enc", "");
-              console.log(fileName);
+            onClick={(e) => {
+              e.preventDefault();
+              // // @ts-ignore
+              // const fileName = fp.split("\\").pop()?.replace(".enc", "");
+              // console.log(fileName);
 
               invoke("showinfolder", {
-                fileName: fileName,
-              }).then((message) => {
-                console.log(message);
-                //@ts-ignore
-                window.my_modaldec_2.showModal();
+                fileName: "",
+                filePath: fp,
               });
+              // .then((message) => {
+              // console.log(message);
+              // //@ts-ignore
+              // window.my_modaldec_2.showModal();
+              // });
             }}
           >
             Show in folder
@@ -73,9 +82,9 @@ const Decrypt: FC = () => {
       theme: "dark",
     });
   };
-  const completedToastFile = () => {
+  const completedToastFile = (fp: string) => {
     // console.log("Toast");
-    toast.success(successMsgFile, {
+    toast.success(successMsgFile(fp), {
       position: "bottom-left",
       autoClose: 15000,
       hideProgressBar: true,
@@ -102,8 +111,8 @@ const Decrypt: FC = () => {
     }
   };
   const decryptFile = async () => {
-    //@ts-ignore
-    const fileName = filePath.split("\\").pop().replace(".enc", "");
+    // //@ts-ignore
+    const fileName = filePath.split("\\").pop()?.replace(".enc", "");
     if ((filePath == "" && text == "") || password == "" || algo == 0) {
       errorToast("Some inputs are missing");
     } else if (textOrFile === false) {
@@ -115,9 +124,9 @@ const Decrypt: FC = () => {
         algo: algo,
       })
         .then((message) => {
-          console.log(message);
-          completedToastFile();
-          //@ts-ignore
+          // console.log(message);
+          completedToastFile(filePath);
+          // //@ts-ignore
           // window.my_modaldec_2.showModal();
         })
         .catch((message) => {
@@ -141,22 +150,23 @@ const Decrypt: FC = () => {
           }
         });
     } else if (textOrFile === true) {
-      console.log(text);
-      console.log(password);
+      // console.log(text);
+      // console.log(password);
+      progressToast("Decryption in progress..");
       invoke("decrypttext", {
         text: text,
         password: password,
         algo: algo,
       })
         .then((message) => {
-          console.log(message);
+          // console.log(message);
           setChiphertext(message as string);
-          completedToastFile();
-          //@ts-ignore
+          // completedToastFile();
+          // // @ts-ignore
           window.my_modaldec_2.showModal();
         })
         .catch((message) => {
-          console.log(message);
+          // console.log(message);
           if (message == "decryption failed") {
             errorToast(
               <div>

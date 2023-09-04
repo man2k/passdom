@@ -9,6 +9,12 @@ import "react-toastify/dist/ReactToastify.css";
 // import CryptoJS from "crypto-js";
 // import fileDownload from "js-file-download";
 
+declare global {
+  interface Window {
+    my_modalenc_4: HTMLFormElement;
+  }
+}
+
 const Encrypt: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
   const [textOrFile, setTextOrFile] = useState<boolean>(false);
@@ -18,24 +24,28 @@ const Encrypt: FC = () => {
   const [algo, setAlgo] = useState<number>(0);
   const [password, setPassword] = useState<string>("");
 
-  const successMsgFile = () => (
+  const successMsgFile = (fp: string) => (
     <div>
       <form>
         <h3 className="italic">File Encryption Successfull!</h3>
         <button
           className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
-          onClick={() => {
-            const ffilePath = filePath.split("\\");
-            const fileName = ffilePath.pop() + ".enc";
+          onClick={(e) => {
+            e.preventDefault();
+            console.log(fp);
+            // const ffilePath = fp.split("\\");
+            // const fileName = ffilePath.pop() + ".enc";
             // const fp =
             //   ffilePath.join("\\") + "\\" + fileName + ".enc";
             // console.log(fp);
             invoke("showinfolder", {
-              fileName: fileName,
-            }).then((message) => {
-              console.log(message);
-              // window.my_modalenc_2.showModal();
+              fileName: "",
+              filePath: fp,
             });
+            // .then((message) => {
+            //   console.log(message);
+            //   // window.my_modalenc_2.showModal();
+            // });
           }}
         >
           Show in folder
@@ -70,9 +80,9 @@ const Encrypt: FC = () => {
       theme: "dark",
     });
   };
-  const completedToastFile = () => {
+  const completedToastFile = (fp: string) => {
     // console.log("Toast");
-    toast.success(successMsgFile, {
+    toast.success(successMsgFile(fp), {
       position: "bottom-left",
       autoClose: 15000,
       hideProgressBar: true,
@@ -120,8 +130,8 @@ const Encrypt: FC = () => {
         algo: algo,
       })
         .then(() => {
-          completedToastFile();
-          // @ts-ignore
+          completedToastFile(filePath);
+          // // @ts-ignore
           // window.my_modalenc_2.showModal();
         })
         .catch((message) => {
@@ -145,7 +155,7 @@ const Encrypt: FC = () => {
         .then((message) => {
           // console.log(message);
           setChiphertext(message as string);
-          // @ts-ignore
+          // // @ts-ignore
           window.my_modalenc_4.showModal();
         })
         .catch((message) => {
