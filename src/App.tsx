@@ -29,14 +29,17 @@ const App: FC = () => {
             >
               <option
                 disabled
-                selected
+                defaultValue={theme}
                 className="bg-gray-800 text-white border-0 mt-2"
               >
                 {theme}
               </option>
-              {themes.map((theme) => (
-                <option className="bg-gray-800 text-white border-0 mt-2">
-                  {theme}
+              {themes.map((the) => (
+                <option
+                  key={the}
+                  className="bg-gray-800 text-white border-0 mt-2"
+                >
+                  {the}
                 </option>
               ))}
             </select>
@@ -58,13 +61,21 @@ const App: FC = () => {
       <div className="mt-16">
         <div>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/encrypt" element={<Encrypt />} />
-            <Route path="/decrypt" element={<Decrypt />} />
-            <Route path="/steganograph" element={<Steganograph />} />
-            <Route path="/desteganograph" element={<DeSteganograph />} />
-            <Route path="/encode" element={<Encode />} />
-            <Route path="/decode" element={<Decode />} />
+            <Route key="home" path="/" element={<Home />} />
+            <Route key="encrypt" path="/encrypt" element={<Encrypt />} />
+            <Route key="decrypt" path="/decrypt" element={<Decrypt />} />
+            <Route
+              key="steganograph"
+              path="/steganograph"
+              element={<Steganograph />}
+            />
+            <Route
+              key="desteganograph"
+              path="/desteganograph"
+              element={<DeSteganograph />}
+            />
+            <Route key="encode" path="/encode" element={<Encode />} />
+            <Route key="decode" path="/decode" element={<Decode />} />
           </Routes>
         </div>
       </div>

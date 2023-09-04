@@ -10,12 +10,24 @@ Passdom is the successor of the previous enc-dec project. Native app for various
 
 ### BUILD (To build installer):
 
+```
 pnpm i && pnpm tauri build
+```
+
 OR
+
+```
 npm i && npm tauri build
+```
 
 ### TEST BUILD (To build a test case):
 
+```
 pnpm i && pnpm tauri dev
+```
+
 OR
+
+```
 npm i && npm tauri dev
+```
