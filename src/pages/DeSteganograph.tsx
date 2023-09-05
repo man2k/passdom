@@ -106,8 +106,6 @@ const DeSteganograph: FC = () => {
       finalpath: savePath,
     })
       .then((message) => {
-        // //@ts-ignore
-        // window.my_modaldes_2.showModal();
         // if (!fileOrText) {
         handleData(message as string);
         completedToastFile(message as string);
@@ -170,14 +168,14 @@ const DeSteganograph: FC = () => {
   return (
     <div className="w-screen h-screen font-mono">
       <div className="flex justify-center h-full items-center">
-        <div className="card bg-amber-600 shadow-2xl rounded-lg pt-1 w-96">
+        <div className="card bg-base-100 border-1 border-accent-content shadow-base-300 shadow-xl rounded-lg pt-1 w-96">
           <figure>
             <img src={unsteg} alt="unsteg" className="w-48 h-48 p-1" />
           </figure>
           <div className="card-body">
             <div className="flex flex-row">
-              <h2 className="card-title font-mono text-black text-2xl h-6 w-full">
-                <span className="w-full">
+              <h2 className="card-title font-mono text-2xl h-6 w-full">
+                <span className="text-shadow-lg shadow-accent w-full">
                   <TypeAnimation
                     sequence={["De-Steganograph", 800, "", 300]}
                     speed={50}
@@ -197,9 +195,9 @@ const DeSteganograph: FC = () => {
                 />
               </div> */}
             </div>
-            <div className="flex justify-center">
+            <form className="flex justify-center">
               <input
-                className="input input-bordered textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10 p-2 px-4"
+                className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3 mt-1 placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
                 placeholder="Type your password here"
                 type={isShown ? "text" : "password"}
                 onChange={handlePassword}
@@ -211,7 +209,7 @@ const DeSteganograph: FC = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-6 h-6 absolute bg-inherit text-black ml-80 mt-2"
+                  className="w-6 h-6 absolute bg-inherit font-extrabold ml-80 mt-3"
                   onClick={() => {
                     setIsShown((prev) => !prev);
                   }}
@@ -234,7 +232,7 @@ const DeSteganograph: FC = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-6 h-6 absolute bg-inherit text-black ml-80 mt-2"
+                  className="w-6 h-6 absolute bg-inherit font-extrabold ml-80 mt-3"
                   onClick={() => {
                     setIsShown((prev) => !prev);
                   }}
@@ -246,14 +244,14 @@ const DeSteganograph: FC = () => {
                   />
                 </svg>
               )}
-            </div>
-            <label className="text-black bg-amber-500 rounded-lg shadow-2xl w-80">
+            </form>
+            <label className="rounded-lg bg-accent text-accent-content shadow-lg shadow-base-300 w-80">
               <span className="italic p-2">
                 Choose the steganographed image:
               </span>
             </label>
             <button
-              className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden text-black"
+              className="btn btn-accent w-full h-10 shadow-lg shadow-base-300 overflow-hidden"
               onClick={handleImgChange}
             >
               {imgPath != "" ? `${imgPath.split("\\").pop()}` : "Choose Image"}
@@ -261,59 +259,12 @@ const DeSteganograph: FC = () => {
 
             <div className="card-actions justify-end">
               <button
-                className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
+                className="btn bg-success hover:bg-accent-focus w-full h-full text-accent-content placeholder:text-accent-content mt-0.5 shadow-xl shadow-base-300"
                 type="submit"
                 onClick={handleSubmit}
               >
                 SUBMIT
               </button>
-              {/* <dialog id="my_modaldes_2" className="modal">
-                <form method="dialog" className="modal-box">
-                  <h3 className="font-bold text-lg ml-2">
-                    De - Steganography Successful!
-                  </h3>
-                  <br />
-                  <h3 className="italic ml-2 mb-1">Text found:</h3>
-                  <span
-                    className="textarea textarea-accent w-full text-white bg-slate-800 font-mono cursor-pointer ml-4"
-                    onClick={(e) => {
-                      if ((e.target as HTMLSpanElement).innerText !== "") {
-                        navigator.clipboard.writeText(data);
-                        let tmp = (e.target as HTMLSpanElement).innerText;
-                        (e.target as HTMLSpanElement).innerText =
-                          "copied to clipboard..";
-                        setTimeout(() => {
-                          (e.target as HTMLSpanElement).innerText = data;
-                        }, 900);
-                      }
-                    }}
-                  >
-                    {data}
-                  </span>
-
-                  <button
-                    className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
-                    onClick={() => {
-                      const ffilePath = stgFilePath.split("\\");
-                      const fileName = ffilePath.pop();
-                      // const fp =
-                      //   ffilePath.join("\\") + "\\" + fileName + ".enc";
-                      // console.log(fp);
-                      invoke("showinfolder", {
-                        fileName: fileName,
-                      }).then((message) => {
-                        console.log(message);
-                        // window.my_modal_2.showModal();
-                      });
-                    }}
-                  >
-                    Show in folder
-                  </button>
-                </form>
-                <form method="dialog" className="modal-backdrop">
-                  <button>close</button>
-                </form>
-              </dialog> */}
             </div>
           </div>
         </div>

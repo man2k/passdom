@@ -175,14 +175,14 @@ const Steganograph: FC = () => {
   return (
     <div className="w-screen h-screen font-mono">
       <div className="flex justify-center h-full grow items-center">
-        <div className="card bg-amber-600 shadow-2xl rounded-lg pt-[0.2rem] w-auto">
+        <div className="card bg-base-100 shadow-base-300 shadow-xl rounded-lg pt-[0.2rem] w-auto">
           <figure>
             <img src={steg} alt="Shoes" className="w-48 h-44 p-2" />
           </figure>
           <div className="card-body">
             <div className="flex flex-row">
-              <h2 className="card-title font-mono text-black text-2xl h-6 w-full">
-                <span className="w-full">
+              <h2 className="card-title font-mono text-2xl h-6 w-full">
+                <span className="text-shadow-lg shadow-accent w-full">
                   <TypeAnimation
                     sequence={["Steganograph", 600, "", 200]}
                     speed={50}
@@ -204,13 +204,13 @@ const Steganograph: FC = () => {
             </div>
             {!fileOrText ? (
               <textarea
-                className="textarea textarea-warning text-base w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10"
-                placeholder="Enter your secret text here"
+                className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
+                placeholder="Enter your secret text here..."
                 onChange={handleData}
               ></textarea>
             ) : (
               <button
-                className="btn glass btn-warning w-full h-10 rounded-xl shadow-lg shadow-gray-500 overflow-hidden text-black"
+                className="btn btn-accent w-full h-10 shadow-lg shadow-base-300 overflow-hidden"
                 onClick={handleFileChange}
               >
                 {filePath != ""
@@ -218,9 +218,9 @@ const Steganograph: FC = () => {
                   : "Choose File"}
               </button>
             )}
-            <div className="flex justify-center">
+            <form className="flex justify-center">
               <input
-                className="input input-bordered textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10 p-2 px-4"
+                className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3 mt-1 placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
                 placeholder="Enter your password here"
                 type={isShown ? "text" : "password"}
                 onChange={handlePassword}
@@ -233,7 +233,7 @@ const Steganograph: FC = () => {
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="w-6 h-6 absolute bg-inherit text-black font-bold ml-[313px] mt-2"
+                    className="w-6 h-6 absolute bg-transparent font-extrabold ml-[320px] mt-3"
                     onClick={() => {
                       setIsShown((prev) => !prev);
                     }}
@@ -256,7 +256,7 @@ const Steganograph: FC = () => {
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="w-6 h-6 absolute bg-inherit text-black font-bold ml-[313px] mt-2"
+                    className="w-6 h-6 absolute bg-transparent font-extrabold ml-[320px] mt-3"
                     onClick={() => {
                       setIsShown((prev) => !prev);
                     }}
@@ -271,7 +271,7 @@ const Steganograph: FC = () => {
               ) : (
                 <></>
               )}
-            </div>
+            </form>
 
             <div className="w-[320px]">
               {/* <input
@@ -279,7 +279,7 @@ const Steganograph: FC = () => {
                 className="file-input file-input-error w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black hidden"
               /> */}
               <button
-                className="btn glass w-full h-10 rounded-xl shadow-lg shadow-gray-800 overflow-hidden text-black hover:text-emerald-50"
+                className="btn btn-accent w-full h-10 shadow-lg shadow-base-300 overflow-hidden"
                 onClick={handleImgChange}
               >
                 {imgPath != "" ? (
@@ -292,7 +292,7 @@ const Steganograph: FC = () => {
 
             <div className="card-actions justify-end">
               <button
-                className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
+                className="btn bg-success hover:bg-accent-focus w-full h-full text-accent-content placeholder:text-accent-content mt-0.5 shadow-xl shadow-base-300"
                 type="submit"
                 onClick={handleSubmit}
               >

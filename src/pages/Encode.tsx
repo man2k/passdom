@@ -98,14 +98,14 @@ const Encode: FC = () => {
   return (
     <div className="w-screen h-screen font-mono">
       <div className="flex justify-center h-full grow items-center">
-        <div className="card bg-amber-600 shadow-2xl rounded-lg pt-[0.2rem] w-auto">
+        <div className="card bg-base-100 shadow-base-300 shadow-xl rounded-lg pt-[0.2rem] w-96">
           <figure>
-            <img src={encdec} alt="Shoes" className="w-48 h-44 p-2" />
+            <img src={encdec} alt="Shoes" className="w-48 h-44" />
           </figure>
           <div className="card-body">
             <div className="flex flex-row">
-              <h2 className="card-title font-mono text-black text-2xl h-6 w-full">
-                <span className="w-full">
+              <h2 className="card-title font-mono text-2xl h-6 w-full">
+                <span className="text-shadow-lg shadow-accent w-full">
                   <TypeAnimation
                     sequence={[
                       "Encode",
@@ -124,14 +124,14 @@ const Encode: FC = () => {
               </h2>
             </div>
             <textarea
-              className="textarea textarea-warning text-base w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10"
+              className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
               placeholder="Enter your secret text here"
               onChange={handleData}
             ></textarea>
 
             <div className="flex justify-center w-[320px]">
               <input
-                className="input input-bordered textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 placeholder:text-slate-300 rounded-lg font-mono text-black h-10 p-2 px-4"
+                className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3 mt-1 placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
                 placeholder="Enter your cover text here"
                 type="text"
                 onChange={handleSalt}
@@ -140,7 +140,7 @@ const Encode: FC = () => {
 
             <div className="card-actions justify-end">
               <button
-                className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
+                className="btn bg-success hover:bg-accent-focus w-full h-full text-accent-content placeholder:text-accent-content mt-0.5 shadow-xl shadow-base-300"
                 type="submit"
                 onClick={handleEncode}
               >

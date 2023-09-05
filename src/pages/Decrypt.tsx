@@ -221,14 +221,14 @@ const Decrypt: FC = () => {
   return (
     <div className="w-screen h-screen font-mono">
       <div className="flex justify-center h-full items-center">
-        <div className="card bg-amber-600 shadow-2xl rounded-lg pt-3 w-96">
+        <div className="card bg-base-100 border-1 border-accent-content shadow-base-300 shadow-xl rounded-lg pt-3 w-96">
           <figure>
             <img src={decryption} alt="Shoes" className="w-48 h-48" />
           </figure>
           <div className="card-body">
             <div className="flex justify-between">
-              <h2 className="card-title font-mono text-black text-2xl h-6 w-24">
-                <span>
+              <h2 className="card-title font-mono text-2xl h-6 w-24">
+                <span className="text-shadow-lg shadow-accent">
                   <TypeAnimation
                     sequence={["Decrypt", 800, "", 300]}
                     speed={50}
@@ -242,7 +242,7 @@ const Decrypt: FC = () => {
               <div>
                 <input
                   type="checkbox"
-                  className="checkbox checkbox-sm checkbox-warning border-black"
+                  className="checkbox checkbox-sm checkbox-accent shadow-xl shadow-base-300"
                   onClick={() => {
                     setTextOrFile((prev) => !prev);
                   }}
@@ -251,13 +251,13 @@ const Decrypt: FC = () => {
             </div>
             {textOrFile ? (
               <textarea
-                className="textarea textarea-warning w-full max-w-xs bg-slate-500 rounded-lg font-mono text-black h-[15px]"
+                className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
                 placeholder="Type here"
                 onChange={handleTextchange}
               ></textarea>
             ) : (
               <button
-                className="btn glass bg-inherit w-full h-10 rounded-xl shadow-lg shadow-gray-800 overflow-hidden text-black"
+                className="btn btn-accent w-full h-10 shadow-lg shadow-base-300 overflow-hidden"
                 onClick={handleFileChange}
               >
                 {filePath != ""
@@ -266,11 +266,11 @@ const Decrypt: FC = () => {
               </button>
             )}
 
-            <div className="flex flex-row">
+            <form className="flex flex-row">
               <input
                 type={isShown ? "text" : "password"}
                 placeholder="Enter your password here"
-                className="input input-bordered textarea-warning w-full max-w-xs bg-slate-700 focus:bg-slate-600 rounded-lg font-mono text-black h-10 p-2 mt-1 placeholder:text-slate-300"
+                className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3 mt-1 placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
                 onChange={(e) => {
                   setPassword(e.target.value);
                 }}
@@ -282,7 +282,7 @@ const Decrypt: FC = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-6 h-6 absolute bg-inherit text-black font-bold ml-[305px] mt-3"
+                  className="w-6 h-6 absolute bg-inherit font-extrabold ml-[309px] mt-3"
                   onClick={() => {
                     setIsShown((prev) => !prev);
                   }}
@@ -305,7 +305,7 @@ const Decrypt: FC = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-6 h-6 absolute bg-inherit text-black font-bold ml-[305px] mt-3"
+                  className="w-6 h-6 absolute bg-inherit font-extrabold ml-[309px] mt-3"
                   onClick={() => {
                     setIsShown((prev) => !prev);
                   }}
@@ -317,9 +317,9 @@ const Decrypt: FC = () => {
                   />
                 </svg>
               )}
-            </div>
+            </form>
             <select
-              className="select select-secondary bg-gray-800 w-full max-w-xs uppercase text-stone-200 shadow-lg shadow-gray-800 mt-0.5"
+              className="select select-accent bg-accent w-full max-w-xs uppercase text-accent-content placeholder:text-accent-content shadow-xl shadow-base-300 mt-0.5"
               onChange={(e) => {
                 handleAlgoChange(e);
               }}
@@ -334,7 +334,7 @@ const Decrypt: FC = () => {
             </select>
             <div className="card-actions justify-end">
               <button
-                className="btn bg-slate-400 hover:bg-teal-400 w-full h-full rounded-lg text-black"
+                className="btn bg-success hover:bg-accent-focus w-full h-full text-accent-content placeholder:text-accent-content mt-0.5 shadow-xl shadow-base-300"
                 onClick={decryptFile}
               >
                 Decrypt
