@@ -9,7 +9,7 @@ const Home: FC = () => {
     <div className="w-full h-full flex flex-col justify-center">
       <div className=" w-full justify-center">
         <div className="flex justify-center pb-2">
-          <div className="card text-8xl flex flex-row font-extralight font-mono">
+          <div className="card text-8xl text-shadow-lg shadow-accent flex flex-row font-extralight font-mono">
             <TypeAnimation
               sequence={[
                 ".ENCRYPT.",

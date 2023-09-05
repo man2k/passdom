@@ -2,6 +2,7 @@ import { navLinks } from "../constants";
 import { Link } from "react-router-dom";
 import { FC } from "react";
 import logo from "/blacklogo.png";
+
 interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
@@ -11,14 +12,18 @@ const Navbar: FC<NavbarProps> = ({ children }: NavbarProps) => {
     <nav className="w-full flex justify-center fixed z-10 mt-1">
       <div className="left-0 absolute">
         <Link to="/">
-          <img src={logo} alt="logo" className="w-14 h-14 rounded-full p-2" />
+          <img
+            src={logo}
+            alt="logo"
+            className="w-16 h-16 mx-4 my-1 rounded-full p-2"
+          />
         </Link>
       </div>
-      <ul className="hidden lg:flex gap-9 w-max justify-center items-center rounded-full shadow-lg shadow-gray-500 bg-base-100 border-2 border-gray-500">
+      <ul className="hidden lg:flex gap-9 w-max justify-center items-center rounded-full shadow-lg shadow-accent bg-transparent backdrop-blur-md border-2 border-t-0 border-accent">
         <li key="home">
           <Link
             to={"/"}
-            className="btn btn-secondary text-base font-bold rounded-full w-max"
+            className="btn btn-secondary text-accent-content font-bold rounded-full w-max"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -38,7 +43,10 @@ const Navbar: FC<NavbarProps> = ({ children }: NavbarProps) => {
         </li>
         {navLinks.map((item) => (
           <li key={item.id}>
-            <Link to={`/${item.id}`} className="btn text-base rounded-full">
+            <Link
+              to={`/${item.id}`}
+              className="btn uppercase text-base rounded-full text-shadow-sm shadow-accent"
+            >
               {item.title}
             </Link>
           </li>

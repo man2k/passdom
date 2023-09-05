@@ -1,7 +1,7 @@
 import Navbar from "./components/Navbar";
 import { Route, Routes } from "react-router-dom";
 import { Home, Encrypt, Decrypt, Steganograph, DeSteganograph } from "./pages";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import Encode from "./pages/Encode";
 import Decode from "./pages/Decode";
 import { ToastContainer } from "react-toastify";
@@ -9,10 +9,16 @@ import "react-toastify/dist/ReactToastify.css";
 import { themes } from "./constants";
 
 const App: FC = () => {
-  const [theme, setTheme] = useState<string>("luxury");
+  const [theme, setTheme] = useState<string>("night");
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme") || "night";
+    setTheme(storedTheme);
+  }, []);
 
   const handleTheme = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setTheme(e.target.value);
+    localStorage.setItem("theme", e.target.value);
   };
 
   return (
@@ -24,20 +30,20 @@ const App: FC = () => {
         <div className="xl:max-w-[1920px] w-full flex">
           <Navbar>
             <select
-              className="select select-accent flex ml-[1150px] absolute mt-2 bg-inherit p-2s w-[100px] rounded-full border-0 text-slate-300"
+              className="select select-accent select-sm hidden md:flex mt-3.5 ml-[1350px] fixed bg-inherit w-[100px] border-1"
+              defaultValue={theme}
               onChange={handleTheme}
             >
               <option
                 disabled
-                defaultValue={theme}
-                className="bg-gray-800 text-white border-0 mt-2"
+                className="bg-accent text-accent-content border-0 mt-2"
               >
                 {theme}
               </option>
               {themes.map((the) => (
                 <option
                   key={the}
-                  className="bg-gray-800 text-white border-0 mt-2"
+                  className="bg-accent text-accent-content border-0 mt-2"
                 >
                   {the}
                 </option>

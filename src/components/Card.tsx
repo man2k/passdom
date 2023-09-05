@@ -10,9 +10,9 @@ interface CardProp {
 
 const Card: FC<CardProp> = ({ title }) => {
   return (
-    <div className="card bg-base-200 w-96 h-72 shadow-xl rounded-xl mx-5 drop-shadow-lg">
+    <div className="card card-compact bg-base-200 w-96 h-72 shadow-lg shadow-base-300 rounded-xl mx-5 drop-shadow-lg">
       <div className="card-body items-center text-center">
-        <h2 className="card-title text-2xl">{title}</h2>
+        <h2 className="card-title text-2xl font-sans font-bold">{title}</h2>
       </div>
       <div className="w-full h-full flex items-center justify-center">
         {title === "Encrypt" ? (
