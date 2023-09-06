@@ -9,10 +9,10 @@ import "react-toastify/dist/ReactToastify.css";
 import { themes } from "./constants";
 
 const App: FC = () => {
-  const [theme, setTheme] = useState<string>("night");
+  const [theme, setTheme] = useState<string>("dracula");
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem("theme") || "night";
+    const storedTheme = localStorage.getItem("theme") || "dracula";
     setTheme(storedTheme);
   }, []);
 

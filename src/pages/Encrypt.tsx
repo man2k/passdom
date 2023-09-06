@@ -40,7 +40,7 @@ const Encrypt: FC = () => {
             // console.log(fp);
             invoke("showinfolder", {
               fileName: "",
-              filePath: fp,
+              filePath: fp + ".enc",
             });
             // .then((message) => {
             //   console.log(message);
@@ -200,7 +200,12 @@ const Encrypt: FC = () => {
       <div className="flex justify-center h-full items-center">
         <div className="card bg-base-100 border-1 border-accent-content shadow-base-300 shadow-xl rounded-lg pt-2 w-96">
           <figure>
-            <img src={encryption} alt="Shoes" className="w-48 h-52" />
+            <img
+              src={encryption}
+              alt="Shoes"
+              className="w-48 h-52 mb-3"
+              // style={{ filter: "drop-shadow(10px 10px 5px rgb(0 0 0 / 0.05))" }}
+            />
           </figure>
           <div className="card-body">
             <div className="flex justify-between">
@@ -226,99 +231,102 @@ const Encrypt: FC = () => {
                 />
               </div>
             </div>
-            {textOrFile ? (
-              <textarea
-                className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
-                placeholder="Type here..."
-                onChange={handleTextchange}
-              ></textarea>
-            ) : (
-              <button
-                className="btn btn-accent w-full h-10 shadow-lg shadow-base-300 overflow-hidden"
-                onClick={handleFileChange}
-              >
-                {filePath != ""
-                  ? `${filePath.split("\\").pop()}`
-                  : "Choose File"}
-              </button>
-            )}
-            <form className="flex flex-row">
-              <input
-                className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3 mt-1 placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
-                placeholder="Enter your password here.."
-                type={isShown ? "text" : "password"}
-                onChange={handlePassword}
-              />
-              {isShown ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-6 h-6 absolute bg-inherit font-extrabold ml-[309px] mt-3"
-                  onClick={() => {
-                    setIsShown((prev) => !prev);
-                  }}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+            <div className="flex flex-col gap-3 items-center">
+              {textOrFile ? (
+                <textarea
+                  className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
+                  placeholder="Type here..."
+                  onChange={handleTextchange}
+                ></textarea>
               ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-6 h-6 absolute bg-inherit font-extrabold ml-[309px] mt-3"
-                  onClick={() => {
-                    setIsShown((prev) => !prev);
-                  }}
+                <button
+                  className="btn btn-accent w-full h-10 shadow-lg shadow-base-300 overflow-hidden"
+                  onClick={handleFileChange}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-                  />
-                </svg>
+                  {filePath != ""
+                    ? `${filePath.split("\\").pop()}`
+                    : "Choose File"}
+                </button>
               )}
-            </form>
-            <select
-              className="select select-accent bg-accent w-full max-w-xs uppercase text-accent-content placeholder:text-accent-content shadow-xl shadow-base-300 mt-0.5"
-              onChange={(e) => {
-                handleAlgoChange(e);
-              }}
-              defaultValue="Select your algorithm!"
-            >
-              <option
-                key="default"
-                disabled
-                className="lowercase text-accent-content"
-              >
-                Select your algorithm!
-              </option>
-              {ChipherList.map((item) => (
-                <option key={item.value}>{item.label}</option>
-              ))}
-            </select>
 
-            <div className="card-actions justify-end">
-              <button
-                className="btn bg-success hover:bg-accent-focus w-full h-full text-accent-content placeholder:text-accent-content mt-0.5 shadow-xl shadow-base-300"
-                // disabled={algo != 0 && filePath != "" ? false : true}
-                onClick={encryptFile}
+              <form className="flex flex-row w-full">
+                <input
+                  className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3 placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
+                  placeholder="Enter your password here.."
+                  type={isShown ? "text" : "password"}
+                  autoComplete="new-password"
+                  onChange={handlePassword}
+                />
+                {isShown ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 absolute bg-inherit font-extrabold ml-[309px] mt-2"
+                    onClick={() => {
+                      setIsShown((prev) => !prev);
+                    }}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6 absolute bg-inherit font-extrabold ml-[309px] mt-2"
+                    onClick={() => {
+                      setIsShown((prev) => !prev);
+                    }}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+                    />
+                  </svg>
+                )}
+              </form>
+              <select
+                className="select select-accent bg-accent w-full max-w-xs uppercase text-accent-content placeholder:text-accent-content shadow-xl shadow-base-300"
+                onChange={(e) => {
+                  handleAlgoChange(e);
+                }}
+                defaultValue="Select your algorithm!"
               >
-                Encrypt
-              </button>
+                <option
+                  key="default"
+                  disabled
+                  className="lowercase text-accent-content"
+                >
+                  Select your algorithm!
+                </option>
+                {ChipherList.map((item) => (
+                  <option key={item.value}>{item.label}</option>
+                ))}
+              </select>
+              <div className="card-actions justify-end w-full">
+                <button
+                  className="btn bg-success hover:bg-accent-focus w-full h-full text-accent-content placeholder:text-accent-content mt-2 shadow-xl shadow-base-300"
+                  // disabled={algo != 0 && filePath != "" ? false : true}
+                  onClick={encryptFile}
+                >
+                  Encrypt
+                </button>
+              </div>
               <dialog id="my_modalenc_4" className="modal">
                 <form method="dialog" className="modal-box">
                   <h3 className="font-bold text-lg">Encryption Successful!</h3>

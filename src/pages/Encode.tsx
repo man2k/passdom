@@ -11,18 +11,19 @@ const Encode: FC = () => {
   const [salt, setSalt] = useState<string>("");
   const [encodedText, setEncodedText] = useState<string>("");
 
-  // useEffect(() => {
-  //   setData("");
-  //   setSalt("");
-  // }, [encodedText]);
+  useEffect(() => {
+    // setData("");
+    // setSalt("");
+    setEncodedText("");
+  }, []);
 
   const successMsgFile = (message: string) => (
     <div>
       <form>
-        <h3 className="italic">Encoding Successful!</h3>
+        <h3 className="italic">Encoding Successful !</h3>
 
         <button
-          className="btn bg-green-500 text-black hover:bg-green-400 rounded-full mt-2"
+          className="btn btn-success btn-xs text-accent-content hover:bg-accent-focus mt-2 text-xs"
           onClick={(e) => {
             handleCopy(e, message);
           }}
@@ -100,7 +101,7 @@ const Encode: FC = () => {
       <div className="flex justify-center h-full grow items-center">
         <div className="card bg-base-100 shadow-base-300 shadow-xl rounded-lg pt-[0.2rem] w-96">
           <figure>
-            <img src={encdec} alt="Shoes" className="w-48 h-44" />
+            <img src={encdec} alt="Shoes" className="w-48 h-44 mb-2" />
           </figure>
           <div className="card-body">
             <div className="flex flex-row">
@@ -123,29 +124,31 @@ const Encode: FC = () => {
                 </span>
               </h2>
             </div>
-            <textarea
-              className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
-              placeholder="Enter your secret text here"
-              onChange={handleData}
-            ></textarea>
+            <div className="flex flex-col gap-3 mt-2">
+              <textarea
+                className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
+                placeholder="Enter your secret text here"
+                onChange={handleData}
+              ></textarea>
 
-            <div className="flex justify-center w-[320px]">
-              <input
-                className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3 mt-1 placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
-                placeholder="Enter your cover text here"
-                type="text"
-                onChange={handleSalt}
-              />
-            </div>
+              <div className="flex justify-center w-[320px]">
+                <input
+                  className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3  placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
+                  placeholder="Enter your cover text here"
+                  type="text"
+                  onChange={handleSalt}
+                />
+              </div>
 
-            <div className="card-actions justify-end">
-              <button
-                className="btn bg-success hover:bg-accent-focus w-full h-full text-accent-content placeholder:text-accent-content mt-0.5 shadow-xl shadow-base-300"
-                type="submit"
-                onClick={handleEncode}
-              >
-                SUBMIT
-              </button>
+              <div className="card-actions justify-end">
+                <button
+                  className="btn bg-success hover:bg-accent-focus w-full h-full text-accent-content placeholder:text-accent-content mt-2 shadow-xl shadow-base-300"
+                  type="submit"
+                  onClick={handleEncode}
+                >
+                  SUBMIT
+                </button>
+              </div>
             </div>
           </div>
         </div>

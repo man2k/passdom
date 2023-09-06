@@ -31,6 +31,7 @@ const Home: FC = () => {
               repeat={Infinity}
               wrapper="h1"
               cursor={false}
+              className=""
             />
           </div>
         </div>
