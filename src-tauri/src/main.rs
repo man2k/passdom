@@ -4,25 +4,22 @@
 use aes::Aes128;
 use aes::Aes192;
 use aes::Aes256;
-// use anyhow::Result;
 use argon2::Argon2;
-use chrono::Utc;
-use std::panic;
-
 use block_modes::block_padding::Pkcs7;
 use block_modes::{BlockMode, Cbc};
+use chrono::Utc;
 use dirs;
 use hex::encode;
 use rand::Rng;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
+use std::panic;
 use std::path::Path;
 use std::process::Command;
 use steganography::decoder::*;
 use steganography::encoder::*;
 use steganography::util::*;
-// use tauri::api::file;
 
 type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 type Aes256Cbc = Cbc<Aes256, Pkcs7>;
@@ -53,8 +50,8 @@ fn steganograph(
     file_path: String,
 ) -> Result<String, String> {
     let (iv, key) = passargon(password, 32).unwrap();
-    println!("IV : {:?}", iv); // IV
-    println!("Key : {:?}", key); // passhash\key
+    // println!("IV : {:?}", iv); // IV
+    // println!("Key : {:?}", key); // passhash\key
 
     let dt = Utc::now();
     let timestamp: i64 = dt.timestamp();
@@ -91,7 +88,7 @@ fn steganograph(
         save_image_buffer(result, finalpath.to_str().unwrap().to_string());
         return Ok(finalpath.to_str().unwrap().to_string());
     } else if file_path != "" {
-        println!("with file");
+        // println!("with file");
 
         let path = Path::new(&file_path);
         // let display = path.display();
@@ -102,7 +99,7 @@ fn steganograph(
         let mut contents = Vec::new();
         let _ = file.read_to_end(&mut contents);
         let pos = contents.len();
-        println!("pos {}", pos);
+        // println!("pos {}", pos);
         let mut buffer: Vec<u8> = vec![0u8; pos + 100];
         buffer[..pos].copy_from_slice(&contents);
         let cipher = Aes256Cbc::new_from_slices(&key, &iv).unwrap();
@@ -158,7 +155,7 @@ fn desteganograph(
         Ok(e) => e,
     };
     let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
-    println!("Dec : {}", s);
+    // println!("Dec : {}", s);
     return Ok(s.to_string());
     // }
     // } else {
@@ -182,9 +179,9 @@ fn desteganograph(
     //     fil.write_all(&decrypted_ciphertext)
     //         .expect("Error Saving Encrypted File");
     //     "This worked!".into()
-    //     // let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
-    //     // println!("Dec : {}", s);
-    //     // return s.to_string();
+    // let s = std::str::from_utf8(&decrypted_ciphertext).unwrap();
+    // println!("Dec : {}", s);
+    // return s.to_string();
     // }
 }
 
@@ -194,14 +191,14 @@ async fn showinfolder(file_name: String, file_path: String) -> Result<String, ()
         let downloads = dirs::download_dir().expect("Could not find downloads directory");
         let finalpath = downloads.join(file_name);
         let fp = finalpath.to_str().unwrap();
-        println!("save path: {}", fp);
+        println!("path opened: {}", fp);
         Command::new("explorer")
             .args(["/select,", fp])
             .spawn()
             .unwrap();
         Ok(format!("Done"))
     } else {
-        println!("save path: {}", file_path);
+        println!("path opened: {}", file_path);
         Command::new("explorer")
             .args(["/select,", file_path.as_str()])
             .spawn()
@@ -228,12 +225,12 @@ fn encryptfile(
     let mut contents = Vec::new();
     let _ = file.read_to_end(&mut contents);
     let pos = contents.len();
-    println!("pos {}", pos);
+    // println!("pos {}", pos);
     let mut buffer: Vec<u8> = vec![0u8; pos + 100];
     buffer[..pos].copy_from_slice(&contents);
 
     let (iv, key) = passargon(password, algo / 8).unwrap();
-    println!("iv : {:?} \nkey : {:?}", iv, key);
+    // println!("iv : {:?} \nkey : {:?}", iv, key);
     if algo == 128 {
         let cipher = Aes128Cbc::new_from_slices(&key, &iv).unwrap();
         let ciphertext = match cipher.encrypt(&mut buffer, pos) {
@@ -284,14 +281,14 @@ fn encryptfile(
 
 #[tauri::command(async)]
 fn encrypttext(text_str: String, password: String, algo: usize) -> Result<String, String> {
-    println!("encrypt text working...");
+    // println!("encrypt text working...");
     let plaintext = text_str.as_bytes();
     let pos = plaintext.len();
     let mut buffer: Vec<u8> = vec![0u8; pos + 100];
     buffer[..pos].copy_from_slice(&plaintext);
 
     let (iv, key) = passargon(password, algo / 8).unwrap();
-    println!("iv : {:?} \nkey : {:?}", iv, key);
+    // println!("iv : {:?} \nkey : {:?}", iv, key);
     if algo == 128 {
         // let key = rand::thread_rng().gen::<[u8; 16]>();
         // let iv = rand::thread_rng().gen::<[u8; 16]>();
@@ -304,7 +301,7 @@ fn encrypttext(text_str: String, password: String, algo: usize) -> Result<String
             Ok(cipt) => cipt,
         };
         let finalchipher = [ciphertext, &iv].concat();
-        println!("finalchipher : {:?}", finalchipher);
+        // println!("finalchipher : {:?}", finalchipher);
         Ok(encode(finalchipher).into())
     } else if algo == 192 {
         // let key = rand::thread_rng().gen::<[u8; 24]>();
@@ -317,7 +314,7 @@ fn encrypttext(text_str: String, password: String, algo: usize) -> Result<String
             Ok(cipt) => cipt,
         };
         let finalchipher = [ciphertext, &iv].concat();
-        println!("finalchipher : {:?}", finalchipher);
+        // println!("finalchipher : {:?}", finalchipher);
         Ok(encode(finalchipher).into())
     } else if algo == 256 {
         // let key = rand::thread_rng().gen::<[u8; 32]>();
@@ -330,7 +327,7 @@ fn encrypttext(text_str: String, password: String, algo: usize) -> Result<String
             Ok(cipt) => cipt,
         };
         let finalchipher = [ciphertext, &iv].concat();
-        println!("finalchipher : {:?}", finalchipher);
+        // println!("finalchipher : {:?}", finalchipher);
 
         Ok(encode(finalchipher).into())
     } else {
@@ -361,8 +358,8 @@ fn decryptfile(
     let fkey = keygenargon(password, algo / 8, iv.try_into().unwrap()).unwrap();
     let mut buffer = content.to_vec();
 
-    println!("IV: {}", encode(&iv));
-    println!("Key: {}", encode(&fkey));
+    // println!("IV: {}", encode(&iv));
+    // println!("Key: {}", encode(&fkey));
 
     if algo == 128 {
         let cipher = Aes128Cbc::new_from_slices(&fkey, &iv).unwrap();
@@ -413,16 +410,16 @@ fn decrypttext(text: String, password: String, algo: usize) -> Result<String, St
         Err(_) => return Err("format error".to_string()),
         Ok(e) => e,
     };
-    println!("plain : {:?}", plaintext);
+    // println!("plain : {:?}", plaintext);
     let (content, iv) = plaintext.split_at(plaintext.len() - 16);
-    println!("content : {:?}", content);
+    // println!("content : {:?}", content);
     // let fkey = hex::decode(key).expect("Decoding failed");
     let fkey = keygenargon(password, algo / 8, iv.try_into().unwrap()).unwrap();
 
     let mut buffer = content.to_vec();
 
-    println!("key : {}", encode(&fkey));
-    println!("iv : {}", encode(&iv));
+    // println!("key : {}", encode(&fkey));
+    // println!("iv : {}", encode(&iv));
     if algo == 128 {
         let cipher = Aes128Cbc::new_from_slices(&fkey, &iv).unwrap();
         let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {

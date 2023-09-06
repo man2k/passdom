@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  img {
+    @apply drop-shadow-[6px_4px_5px_hsl(var(--s))];
+  }
+}

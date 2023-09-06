@@ -2,6 +2,7 @@ import { navLinks } from "../constants";
 import { Link } from "react-router-dom";
 import { FC } from "react";
 import logo from "/blacklogo.png";
+// import logo2 from "/whitelogo.png";
 
 interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -9,17 +10,17 @@ interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Navbar: FC<NavbarProps> = ({ children }: NavbarProps) => {
   return (
-    <nav className="w-full flex justify-center fixed z-10 mt-1">
+    <nav className="w-full flex justify-center fixed z-10 mt-0.5">
       <div className="left-0 absolute">
         <Link to="/">
           <img
             src={logo}
             alt="logo"
-            className="w-16 h-16 mx-4 my-1 rounded-full p-2"
+            className="w-16 h-16 mx-4 my-1 rounded-full p-2 drop-shadow-[-6px_-4px_5px_hsl(var(--s))]"
           />
         </Link>
       </div>
-      <ul className="hidden lg:flex gap-9 w-max justify-center items-center rounded-full shadow-lg shadow-accent bg-transparent backdrop-blur-md border-2 border-t-0 border-accent">
+      <ul className="hidden lg:flex gap-9 w-max justify-center items-center rounded-full shadow-lg border-x-0 shadow-accent bg-transparent backdrop-blur-md border-2 border-t-0 border-accent">
         <li key="home">
           <Link
             to={"/"}
