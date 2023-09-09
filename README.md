@@ -4,7 +4,7 @@ Passdom is the successor of the previous enc-dec project. Native app for various
 
 ## Screenshots
 
-![alt text](https://i.ibb.co/QX9Gfry/showcase.gif)
+![alt text](https://i.ibb.co/cxrFH1w/showcase.gif)
 
 ## Test and Build commands
 
