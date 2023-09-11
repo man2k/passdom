@@ -32,19 +32,11 @@ const Decrypt: FC = () => {
             className="btn btn-success btn-xs text-accent-content hover:bg-accent-focus mt-2 text-xs"
             onClick={(e) => {
               e.preventDefault();
-              // // @ts-ignore
-              // const fileName = fp.split("\\").pop()?.replace(".enc", "");
-              // console.log(fileName);
-
+              // console.log(fp);
               invoke("showinfolder", {
-                fileName: "",
-                filePath: fp.replace(".enc", ""),
+                fileName: fp.split("\\").pop()?.replace(".enc", ""),
+                filePath: "",
               });
-              // .then((message) => {
-              // console.log(message);
-              // //@ts-ignore
-              // window.my_modaldec_2.showModal();
-              // });
             }}
           >
             Show in folder

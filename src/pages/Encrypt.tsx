@@ -32,20 +32,11 @@ const Encrypt: FC = () => {
           className="btn btn-success btn-xs text-accent-content hover:bg-accent-focus mt-2 text-xs"
           onClick={(e) => {
             e.preventDefault();
-            console.log(fp);
-            // const ffilePath = fp.split("\\");
-            // const fileName = ffilePath.pop() + ".enc";
-            // const fp =
-            //   ffilePath.join("\\") + "\\" + fileName + ".enc";
             // console.log(fp);
             invoke("showinfolder", {
-              fileName: "",
-              filePath: fp + ".enc",
+              fileName: fp.split("\\").pop() + ".enc",
+              filePath: "",
             });
-            // .then((message) => {
-            //   console.log(message);
-            //   // window.my_modalenc_2.showModal();
-            // });
           }}
         >
           Show in folder
