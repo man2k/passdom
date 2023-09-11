@@ -15,7 +15,6 @@ pub fn encrypttext(text_str: String, password: String, algo: usize) -> Result<St
     let pos = plaintext.len();
     let mut buffer: Vec<u8> = vec![0u8; pos + 100];
     buffer[..pos].copy_from_slice(&plaintext);
-
     let (iv, key) = passargon(password, algo / 8).unwrap();
     // println!("iv : {:?} \nkey : {:?}", iv, key);
     if algo == 128 {

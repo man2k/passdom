@@ -20,7 +20,6 @@ pub fn decrypttext(text: String, password: String, algo: usize) -> Result<String
     let fkey = keygenargon(password, algo / 8, iv.try_into().unwrap()).unwrap();
 
     let mut buffer = content.to_vec();
-
     // println!("key : {}", encode(&fkey));
     // println!("iv : {}", encode(&iv));
     if algo == 128 {
