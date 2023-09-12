@@ -1,13 +1,9 @@
-use aes::Aes256;
-use block_modes::block_padding::Pkcs7;
-use block_modes::{BlockMode, Cbc};
+use crate::commands::lib::Aes256Cbc;
+use crate::utilities::keygen::keygenargon;
+use block_modes::BlockMode;
 use std::panic;
 use steganography::decoder::*;
 use steganography::util::*;
-
-use crate::utilities::keygen::keygenargon;
-
-type Aes256Cbc = Cbc<Aes256, Pkcs7>;
 
 #[tauri::command(async)]
 pub fn desteganograph(

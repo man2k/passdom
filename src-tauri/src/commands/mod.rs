@@ -3,4 +3,5 @@ pub mod decrypttext;
 pub mod desteganograph;
 pub mod encryptfile;
 pub mod encrypttext;
+pub mod lib;
 pub mod steganograph;

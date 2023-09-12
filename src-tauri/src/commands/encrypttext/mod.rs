@@ -1,13 +1,7 @@
+use crate::commands::lib::{Aes128Cbc, Aes192Cbc, Aes256Cbc};
 use crate::utilities::passargon::passargon;
-use aes::Aes128;
-use aes::Aes192;
-use aes::Aes256;
-use block_modes::block_padding::Pkcs7;
-use block_modes::{BlockMode, Cbc};
+use block_modes::BlockMode;
 use hex::encode;
-type Aes128Cbc = Cbc<Aes128, Pkcs7>;
-type Aes256Cbc = Cbc<Aes256, Pkcs7>;
-type Aes192Cbc = Cbc<Aes192, Pkcs7>;
 
 #[tauri::command(async)]
 pub fn encrypttext(text_str: String, password: String, algo: usize) -> Result<String, String> {

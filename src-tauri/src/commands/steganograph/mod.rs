@@ -1,17 +1,13 @@
-use aes::Aes256;
-use block_modes::block_padding::Pkcs7;
-use block_modes::{BlockMode, Cbc};
+use crate::commands::lib::Aes256Cbc;
+use crate::utilities::passargon::passargon;
+use block_modes::BlockMode;
 use chrono::Utc;
 use dirs;
-use steganography::encoder::*;
-use steganography::util::*;
-
-use crate::utilities::passargon::passargon;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-
-type Aes256Cbc = Cbc<Aes256, Pkcs7>;
+use steganography::encoder::*;
+use steganography::util::*;
 
 #[tauri::command(async)]
 pub fn steganograph(
