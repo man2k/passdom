@@ -1,7 +1,7 @@
 import { FC, ReactElement, useEffect, useState } from "react";
 import encdec from "/encode.png";
 import { TypeAnimation } from "react-type-animation";
-// //@ts-ignore
+// import StegCloak from "stegcloak";
 import ZwspSteg from "zwsp-steg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -90,6 +90,9 @@ const Encode: FC = () => {
       errorToast("Some inputs are missing");
       return;
     }
+
+    // let encoder = new StegCloak(false, false);
+    // let finalStr = encoder.hide(data, "", salt);
     let encoded = ZwspSteg.encode(data, ZwspSteg.MODE_FULL);
     let finalStr = salt + encoded;
     handleEncodedText(finalStr);

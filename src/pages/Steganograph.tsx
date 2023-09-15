@@ -8,9 +8,9 @@ import "react-toastify/dist/ReactToastify.css";
 
 const Steganograph: FC = () => {
   const [isShown, setIsShown] = useState<boolean>(false);
-  const [fileOrText, setFileOrText] = useState<boolean>(false);
-  const [filePath, setFilePath] = useState<string>("");
-  const [stgFilePath, setStegFilePath] = useState<string>("");
+  // const [fileOrText, setFileOrText] = useState<boolean>(false);
+  // const [filePath, setFilePath] = useState<string>("");
+  const [_stgFilePath, setStegFilePath] = useState<string>("");
   const [imgPath, setImgPath] = useState<string>("");
   const [data, setData] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -119,18 +119,18 @@ const Steganograph: FC = () => {
     }
   };
 
-  const handleFileChange = async () => {
-    const selected = await open({
-      multiple: false,
-    });
+  // const handleFileChange = async () => {
+  //   const selected = await open({
+  //     multiple: false,
+  //   });
 
-    if (selected === null) {
-      // user cancelled the selection
-    } else {
-      // user selected a single file
-      setFilePath(selected as string);
-    }
-  };
+  //   if (selected === null) {
+  //     // user cancelled the selection
+  //   } else {
+  //     // user selected a single file
+  //     setFilePath(selected as string);
+  //   }
+  // };
 
   const handleSubmit = async () => {
     if (imgPath === "" || password === "" || data === "") {
@@ -142,12 +142,11 @@ const Steganograph: FC = () => {
       imgPath: imgPath,
       data: data,
       password: password,
-      filePath: filePath,
+      filePath: "",
     })
       .then((message) => {
         console.log(message);
         handleStegPath(message as string);
-        // //@ts-ignore
         // window.my_modalstg_2.showModal();
         completedToastFile(message as string);
         // console.log(message);
@@ -203,22 +202,22 @@ const Steganograph: FC = () => {
               </div> */}
             </div>
             <div className="flex flex-col gap-3">
-              {!fileOrText ? (
-                <textarea
-                  className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
-                  placeholder="Enter your secret text here..."
-                  onChange={handleData}
-                ></textarea>
-              ) : (
-                <button
-                  className="btn btn-accent w-full h-10 shadow-lg shadow-base-300 overflow-hidden"
-                  onClick={handleFileChange}
-                >
-                  {filePath != ""
-                    ? `${filePath.split("\\").pop()}`
-                    : "Choose File"}
-                </button>
-              )}
+              {/* {!fileOrText ? ( */}
+              <textarea
+                className="textarea textarea-accent w-full max-w-xs bg-accent font-mono text-accent-content placeholder:text-accent-content h-10 shadow-xl shadow-base-300 placeholder:font-semibold"
+                placeholder="Enter your secret text here..."
+                onChange={handleData}
+              ></textarea>
+              {/* // ) : (
+              //   <button
+              //     className="btn btn-accent w-full h-10 shadow-lg shadow-base-300 overflow-hidden"
+              //     onClick={handleFileChange}
+              //   >
+              //     {filePath != ""
+              //       ? `${filePath.split("\\").pop()}`
+              //       : "Choose File"}
+              //   </button>
+              // )} */}
               <form className="flex justify-center">
                 <input
                   className="input input-accent w-full max-w-xs bg-accent font-mono h-10 p-3 placeholder:text-accent-content text-accent-content shadow-xl shadow-base-300"
