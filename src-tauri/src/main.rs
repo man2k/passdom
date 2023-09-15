@@ -9,7 +9,7 @@ use commands::desteganograph::desteganograph;
 use commands::encryptfile::encryptfile;
 use commands::encrypttext::encrypttext;
 use commands::steganograph::steganograph;
-use utilities::showinfolder::showinfolder;
+use utilities::showinfolder;
 
 fn main() {
     tauri::Builder::default()

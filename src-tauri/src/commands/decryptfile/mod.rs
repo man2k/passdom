@@ -1,5 +1,5 @@
-use crate::commands::lib::{Aes128Cbc, Aes192Cbc, Aes256Cbc};
-use crate::utilities::keygen::keygenargon;
+use super::super::utilities::keygenargon;
+use super::lib::{Aes128Cbc, Aes192Cbc, Aes256Cbc, Algorithms};
 use block_modes::BlockMode;
 use dirs;
 use std::fs::File;
@@ -24,48 +24,21 @@ pub fn decryptfile(
     let (content, iv) = contents.split_at(contents.len() - 16);
     let fkey = keygenargon(password, algo / 8, iv.try_into().unwrap()).unwrap();
     let mut buffer = content.to_vec();
+    let downloads = dirs::download_dir().expect("Could not find downloads directory");
+    let finalpath = downloads.join(file_name);
+    let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
 
-    // println!("IV: {}", encode(&iv));
-    // println!("Key: {}", encode(&fkey));
-
-    if algo == 128 {
-        let cipher = Aes128Cbc::new_from_slices(&fkey, &iv).unwrap();
-        // let decrypted_ciphertext = cipher.decrypt(&mut buffer)?;
-        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
-            Err(_) => return Err("decryption failed".to_string()),
-            Ok(decrypted_ciphertext) => decrypted_ciphertext,
-        };
-        let downloads = dirs::download_dir().expect("Could not find downloads directory");
-        let finalpath = downloads.join(file_name);
-        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
-        fil.write_all(&decrypted_ciphertext)
-            .expect("Error Saving Encrypted File");
-        Ok("ok".to_string())
-    } else if algo == 192 {
-        let cipher = Aes192Cbc::new_from_slices(&fkey, &iv).unwrap();
-        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
-            Err(_) => return Err("decryption failed".to_string()),
-            Ok(decrypted_ciphertext) => decrypted_ciphertext,
-        };
-        let downloads = dirs::download_dir().expect("Could not find downloads directory");
-        let finalpath = downloads.join(file_name);
-        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
-        fil.write_all(&decrypted_ciphertext)
-            .expect("Error Saving Encrypted File");
-        Ok("ok".to_string())
-    } else if algo == 256 {
-        let cipher = Aes256Cbc::new_from_slices(&fkey, &iv).unwrap();
-        let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
-            Err(_) => return Err("decryption failed".to_string()),
-            Ok(decrypted_ciphertext) => decrypted_ciphertext,
-        };
-        let downloads = dirs::download_dir().expect("Could not find downloads directory");
-        let finalpath = downloads.join(file_name);
-        let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
-        fil.write_all(&decrypted_ciphertext)
-            .expect("Error Saving Encrypted File");
-        Ok("ok".to_string())
-    } else {
-        Ok("Some Error has occured".to_string())
-    }
+    let cipher = match algo {
+        128 => Algorithms::AES128(Aes128Cbc::new_from_slices(&fkey, &iv).unwrap()),
+        192 => Algorithms::AES192(Aes192Cbc::new_from_slices(&fkey, &iv).unwrap()),
+        256 => Algorithms::AES256(Aes256Cbc::new_from_slices(&fkey, &iv).unwrap()),
+        _ => todo!(),
+    };
+    let decrypted_ciphertext = match cipher.decrypt(&mut buffer) {
+        Err(_) => return Err("decryption failed".to_string()),
+        Ok(decrypted_ciphertext) => decrypted_ciphertext,
+    };
+    fil.write_all(&decrypted_ciphertext)
+        .expect("Error Saving Encrypted File");
+    Ok("ok".to_string())
 }

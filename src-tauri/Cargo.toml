@@ -7,8 +7,6 @@ license = ""
 repository = "https://github.com/man2k/passdomNative"
 edition = "2021"
 
-[env]
-RUST_BACKTRACE = "1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -28,7 +26,6 @@ dirs = "4.0.0"
 steganography = "*"
 argon2 = "0.5.1"
 chrono = "0.4.27"
-ccm = "0.5.0"
 thiserror = "1.0.48"
 anyhow = "1.0.75"
 
