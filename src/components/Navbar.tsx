@@ -10,7 +10,7 @@ interface NavbarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Navbar: FC<NavbarProps> = ({ children }: NavbarProps) => {
   return (
-    <nav className="w-full flex justify-center fixed z-10 mt-0.5">
+    <nav className="w-screen flex justify-center fixed mt-0.5">
       <div className="left-0 absolute">
         <Link to="/">
           <img

@@ -21,6 +21,28 @@ pub fn encrypttext(text_str: String, password: String, algo: usize) -> Result<St
 
     let ciphertext = cipher.encrypt(&mut buffer, pos)?;
     let finalchipher = [ciphertext, iv.to_vec()].concat();
-
+    // println!("final {:?}", finalchipher);
     Ok(encode(finalchipher))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn encrypttext_integrity() {
+        assert_ne!(
+            encrypttext(
+                "This is a test".to_string(),
+                "testpassword".to_string(),
+                256
+            )
+            .unwrap(),
+            encrypttext(
+                "This is a test".to_string(),
+                "testpassword".to_string(),
+                256
+            )
+            .unwrap()
+        )
+    }
 }

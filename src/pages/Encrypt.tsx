@@ -6,8 +6,6 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import CryptoJS from "crypto-js";
-// import fileDownload from "js-file-download";
 
 declare global {
   interface Window {

@@ -30,7 +30,7 @@ pub fn encryptfile(
     let downloads = dirs::download_dir().expect("Could not find downloads directory");
     let finalpath = downloads.join(file_name);
     let mut fil = File::create(finalpath).expect("Error Creating Encrypted File");
-    // println!("iv : {:?} \nkey : {:?}", iv, key);
+    println!("iv : {:?} \nkey : {:?}", iv, key);
 
     let cipher: Algorithms = match algo {
         128 => Algorithms::AES128(Aes128Cbc::new_from_slices(&key, &iv).unwrap()),
@@ -46,3 +46,19 @@ pub fn encryptfile(
 
     Ok(())
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     #[test]
+//     fn encryptfile_test() {
+//         encryptfile(
+//             r"M:\pROGRAMMING fILES\DedSec\passdomtauri\passdomNative\src-tauri\tests\testfiles\abc.jpg".to_string(),
+//             "abc.jpg".to_string(),
+//             "testpassword".to_string(),
+//             256,
+//         )
+//         .unwrap();
+//     }
+// }
