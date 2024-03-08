@@ -11,7 +11,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.5.1",
+    "@tauri-apps/api": "^1.4.0",
     "@types/crypto-js": "^4.1.1",
     "@types/react-router-dom": "^5.3.3",
     "aes-js": "^3.1.2",
@@ -28,7 +28,7 @@
     "zwsp-steg": "^1.0.1"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.5.6",
+    "@tauri-apps/cli": "^1.4.0",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@types/stegcloak": "^1.0.0",
